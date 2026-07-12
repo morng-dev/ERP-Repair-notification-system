@@ -15,7 +15,9 @@ func (m *AuthMiddleware) AuthRequire() fiber.Handler {
 		AuthoHeader := c.Get("Authorization")
 
 		if AuthoHeader == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON()
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"message": "",
+			})
 		}
 		return c.Next()
 	}
