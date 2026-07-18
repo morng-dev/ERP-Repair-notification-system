@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type RepairRequest struct {
+type Repair struct {
 	ID      uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
 	AssetID uuid.UUID `json:"asset_id"`
 	Asset   Assets    `gorm:"foreignKey:AssetID" json:"asset,omitempty"`
@@ -25,9 +25,9 @@ type RepairRequest struct {
 }
 
 type RepairLogs struct {
-	ID        uuid.UUID     `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
-	RequestID uuid.UUID     `json:"request_id"`
-	Request   RepairRequest `gorm:"foreignKey:RequestID" json:"request,omitempty"`
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	RequestID uuid.UUID `json:"request_id"`
+	Request   Repair    `gorm:"foreignKey:RequestID" json:"request,omitempty"`
 
 	TechnicianID uuid.UUID `json:"technician_id"`
 	Technician   User      `gorm:"foreignKey:TechnicianID" json:"technician,omitempty"`
