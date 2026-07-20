@@ -10,7 +10,8 @@ import (
 )
 
 func Setupdatabase(config *Config) *gorm.DB {
-	dns := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", config.DBHost, config.DBName, config.DBPass, config.DBPort, config.DBSSLMode)
+	dns := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
+		config.DBHost, config.DBUser, config.DBPass, config.DBName, config.DBPort, config.DBSSLMode)
 
 	db, err := gorm.Open(postgres.Open(dns), &gorm.Config{})
 	if err != nil {

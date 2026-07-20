@@ -2,16 +2,14 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/morng-dev/erp/internal/config"
 )
 
 func main() {
-	// app := fiber.New(fiber.Config{
-	// 	ErrorHandler: func(c *fiber.Ctx, err error) error {
-	// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	// 			"error": err.Error(),
-	// 		})
-	// 	},
-	// })
+	cfg := config.LoadCongig()
+	config.Setupdatabase(cfg)
+	config.SetupRedis(cfg)
+
 	app := fiber.New()
 
 	app.Get("/", func(c *fiber.Ctx) error {

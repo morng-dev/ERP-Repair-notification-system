@@ -11,7 +11,7 @@ type User struct {
 	Email        string      `json:"email"`
 	Firsname     string      `json:"first_name"`
 	Lastname     string      `json:"last_name"`
-	Avartar      string      `json:"avartar"`
+	Avatar       string      `json:"avatar"`
 	Active       bool        `json:"active"`
 	ProfessionID uuid.UUID   `json:"profession_id"`
 	Profession   *Profession `json:"profession"`
@@ -27,4 +27,10 @@ type Profession struct {
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type UpdateUser struct {
+	FirstName string
+	LastName  string
+	Avatar    string
 }
