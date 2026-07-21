@@ -34,3 +34,10 @@ type UpdateUser struct {
 	LastName  string
 	Avatar    string
 }
+
+type RegisterRequest struct {
+	Email    string `json:"email" validate:"required"`
+	Firsname string `json:"first_name" validate:"required"`
+	Lastname string `json:"last_name" validate:"required"`
+	Avatar   string `json:"avatar,omitempty"`
+}

@@ -79,6 +79,9 @@ func (r *UserRepository) Update(ctx context.Context, id uuid.UUID, req *entities
 	}
 	return r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", id).Updates(updates).Error
 }
+func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	return r.db.WithContext(ctx).Delete(&models.User{}, "id = ?", id).Error
+}
 func (r *UserRepository) modelToEntity(userModel *models.User) *entities.User {
 	user := &entities.User{
 		ID:           userModel.ID,

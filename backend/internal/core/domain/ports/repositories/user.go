@@ -13,6 +13,6 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*entities.User, error)
 	GetUser(ctx context.Context, page, limit int) ([]*entities.User, int, error)
 	Update(ctx context.Context, id uuid.UUID, req *entities.UpdateUser) error
-	// Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, id uuid.UUID) error
 	// GetPasswordHash(ctx context.Context, id uuid.UUID) (string, error)
 }
