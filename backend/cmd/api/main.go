@@ -1,7 +1,11 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/morng-dev/erp/internal/adapters/http/handler"
+	"github.com/morng-dev/erp/internal/adapters/http/routes"
 	"github.com/morng-dev/erp/internal/adapters/persistence/repositories"
 	"github.com/morng-dev/erp/internal/config"
 	"github.com/morng-dev/erp/internal/core/services"
@@ -13,7 +17,9 @@ func main() {
 	config.SetupRedis(cfg)
 	userRepo := repositories.NewUserRepository(db)
 
-	userService := services.NewAuthService(userRepo)
+	authrService := services.NewAuthService(userRepo)
+
+	authHandler := handler.NewAuthHandler(authrService)
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -23,9 +29,10 @@ func main() {
 		},
 	})
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("hello world")
-	})
+	routes := routes.NewRoutes(
+		authHandler,
+	)
+	routes.SetUpRoute(app)
 
-	app.Listen(":3005")
+	log.Fatal(app.Listen("server running on port: " + cfg.APPPORT))
 }

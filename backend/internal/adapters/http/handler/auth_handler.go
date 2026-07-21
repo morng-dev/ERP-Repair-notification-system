@@ -46,3 +46,34 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		Data:    user,
 	})
 }
+
+func (h *AuthHandler) Login(c *fiber.Ctx) error {
+	var req entities.LoginRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
+			Success: false,
+			Message: "ข้อมูลไม่ถูกต้อง",
+			Error:   err.Error(),
+		})
+	}
+	if err := utils.ValidateStruct(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
+			Success: false,
+			Message: "รูปแบบข้อมูลไม่ถูกต้อง",
+			Error:   err.Error(),
+		})
+	}
+	response, err := h.authService.Login(c.Context(), &req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
+			Success: false,
+			Message: "เข้าสู่ระบบไม่สำเร็จ",
+			Error:   err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
+		Success: true,
+		Message: "เข้าสู่ระบบสำเร็จ",
+		Data:    response,
+	})
+}
