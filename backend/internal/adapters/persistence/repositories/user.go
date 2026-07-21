@@ -82,6 +82,16 @@ func (r *UserRepository) Update(ctx context.Context, id uuid.UUID, req *entities
 func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Delete(&models.User{}, "id = ?", id).Error
 }
+
+func (r *UserRepository) GetPasswordHash(ctx context.Context, id uuid.UUID) (string, error) {
+	var user models.User
+
+	if err := r.db.WithContext(ctx).Select("password").First(&user, "id = ?", id).Error; err != nil {
+		return "", err
+	}
+	return user.Password, nil
+}
+
 func (r *UserRepository) modelToEntity(userModel *models.User) *entities.User {
 	user := &entities.User{
 		ID:           userModel.ID,

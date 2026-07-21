@@ -7,6 +7,12 @@ type ApiResponse struct {
 	Pagination *PaginationResponse `json:"pagination,omitempty"`
 }
 
+type ErrorResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Error   string `json:"error,omitempty"`
+}
+
 type PaginationResponse struct {
 	Page       int `json:"page"`
 	Limit      int `json:"limit"`
