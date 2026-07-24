@@ -38,6 +38,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
 			Success: false,
 			Message: "ไม่สามารถลงทะเบียนได้",
+			Error:   err.Error(),
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{

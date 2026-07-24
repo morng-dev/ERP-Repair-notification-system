@@ -11,23 +11,25 @@ import (
 
 type AuthService struct {
 	userRepo repositories.UserRepository
+	roleRepo repositories.RoleRepository
 }
 
-func NewAuthService(userRepo repositories.UserRepository) *AuthService {
-	return &AuthService{userRepo: userRepo}
+func NewAuthService(userRepo repositories.UserRepository, roleRepo repositories.RoleRepository) *AuthService {
+	return &AuthService{
+		userRepo: userRepo,
+		roleRepo: roleRepo,
+	}
 }
 
 func (s *AuthService) Register(ctx context.Context, req *entities.RegisterRequest) (*entities.User, error) {
 	_, err := s.userRepo.GetByEmail(ctx, req.Email)
-	if err != nil {
+	if err == nil {
 		return nil, errors.New("มีผู้ใช้แล้วในระบบ")
 	}
 
-	user := &entities.User{
-		Email:    req.Email,
-		Firsname: req.Firsname,
-		Lastname: req.Lastname,
-		Avatar:   req.Avatar,
+	userRole, err := s.roleRepo.GetByName(ctx, "user")
+	if err != nil {
+		return nil, errors.New("ไม่พบบทบาทผู้ใช้")
 	}
 
 	hashPassword, err := utils.HashPassword(req.Password)
@@ -35,12 +37,19 @@ func (s *AuthService) Register(ctx context.Context, req *entities.RegisterReques
 		return nil, err
 	}
 
+	user := &entities.User{
+		Email:    req.Email,
+		Firsname: req.Firsname,
+		Lastname: req.Lastname,
+		Avatar:   req.Avatar,
+		RoleID:   userRole.ID,
+	}
+
 	if err := s.userRepo.Create(ctx, user, hashPassword); err != nil {
 		return nil, err
 	}
 
 	return s.userRepo.GetByID(ctx, user.ID)
-
 }
 
 func (s *AuthService) Login(ctx context.Context, req *entities.LoginRequest) (*entities.LoginResponse, error) {

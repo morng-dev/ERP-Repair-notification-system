@@ -14,10 +14,11 @@ import (
 func main() {
 	cfg := config.LoadCongig()
 	db := config.Setupdatabase(cfg)
-	config.SetupRedis(cfg)
+	// redid := config.SetupRedis(cfg)
 	userRepo := repositories.NewUserRepository(db)
+	roleRepo := repositories.NewRoleRepository(db)
 
-	authrService := services.NewAuthService(userRepo)
+	authrService := services.NewAuthService(userRepo, roleRepo)
 
 	authHandler := handler.NewAuthHandler(authrService)
 
@@ -34,5 +35,6 @@ func main() {
 	)
 	routes.SetUpRoute(app)
 
-	log.Fatal(app.Listen("server running on port: " + cfg.APPPORT))
+	log.Printf("Server starting on port %s", cfg.APPPORT)
+	log.Fatal(app.Listen(":" + cfg.APPPORT))
 }
