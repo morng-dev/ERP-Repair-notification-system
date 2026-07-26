@@ -80,7 +80,7 @@ func (r *UserRepository) Update(ctx context.Context, id uuid.UUID, req *entities
 		updates["first_name"] = req.FirstName
 	}
 	if req.LastName != "" {
-		updates["first_name"] = req.LastName
+		updates["last_name"] = req.LastName
 	}
 	if req.Avatar != "" {
 		updates["avatar"] = req.Avatar

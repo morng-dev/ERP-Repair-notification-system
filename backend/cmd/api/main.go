@@ -14,7 +14,7 @@ import (
 func main() {
 	cfg := config.LoadCongig()
 	db := config.Setupdatabase(cfg)
-	// redid := config.SetupRedis(cfg)
+	// redis := config.SetupRedis(cfg)
 	userRepo := repositories.NewUserRepository(db)
 	roleRepo := repositories.NewRoleRepository(db)
 

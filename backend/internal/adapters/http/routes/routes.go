@@ -27,7 +27,9 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 		AllowHeaders: "Origin,Content-Type,Accept,Authorization",
 	}))
 
-	auth := app.Group("/api/v1")
+	api := app.Group("/api/v1")
+	//auth
+	auth := api.Group("/auth")
 	auth.Post("/register", r.authHandler.Register)
 	auth.Post("/login", r.authHandler.Login)
 }
