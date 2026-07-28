@@ -73,6 +73,7 @@ func (s *AuthService) Login(ctx context.Context, req *entities.LoginRequest) (*e
 	if err != nil {
 		return nil, err
 	}
+
 	return &entities.LoginResponse{
 		Token: token,
 		User:  *user,

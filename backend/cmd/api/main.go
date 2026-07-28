@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/morng-dev/erp/internal/adapters/http/handler"
+	"github.com/morng-dev/erp/internal/adapters/http/middleware"
 	"github.com/morng-dev/erp/internal/adapters/http/routes"
 	"github.com/morng-dev/erp/internal/adapters/persistence/repositories"
 	"github.com/morng-dev/erp/internal/config"
@@ -14,6 +15,7 @@ import (
 func main() {
 	cfg := config.LoadCongig()
 	db := config.Setupdatabase(cfg)
+	authMW := middleware.NewNewAuthMiddleware(cfg.JWTSecret)
 	// redis := config.SetupRedis(cfg)
 	userRepo := repositories.NewUserRepository(db)
 	roleRepo := repositories.NewRoleRepository(db)
@@ -31,6 +33,7 @@ func main() {
 	})
 
 	routes := routes.NewRoutes(
+		authMW,
 		authHandler,
 	)
 	routes.SetUpRoute(app)

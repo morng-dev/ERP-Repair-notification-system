@@ -1,6 +1,11 @@
 package middleware
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"github.com/morng-dev/erp/internal/core/domain/entities"
+	"github.com/morng-dev/erp/pkg/utils"
+)
 
 type AuthMiddleware struct {
 	jwtSecret string
@@ -12,13 +17,28 @@ func NewNewAuthMiddleware(jwtSecret string) *AuthMiddleware {
 
 func (m *AuthMiddleware) AuthRequire() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		AuthoHeader := c.Get("Authorization")
-
-		if AuthoHeader == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"message": "",
+		tokenString := c.Cookies("access_token")
+		if tokenString == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
+				Message: "missing access_token cookie",
 			})
 		}
+		// tokenString := strings.TrimPrefix(AuthoHeader, "Bearer ")
+		// if tokenString == AuthoHeader {
+		// 	return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
+		// 		Message: "invalid authorization format",
+		// 	})
+		// }
+		claims, err := utils.ValidateJWT(tokenString)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
+				Message: "invalid or expired token",
+			})
+		}
+		userID, err := uuid.Parse(claims.UserID)
+		c.Locals("email", claims.Email)
+		c.Locals("userID", userID)
+		c.Locals("role", claims.Role)
 		return c.Next()
 	}
 }

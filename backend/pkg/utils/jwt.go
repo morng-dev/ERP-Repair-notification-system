@@ -53,5 +53,5 @@ func ValidateJWT(tokenString string) (*Claims, error) {
 	if !ok {
 		return nil, errors.New("unknown claims type")
 	}
-	return claims, jwt.ErrSignatureInvalid
+	return claims, nil
 }

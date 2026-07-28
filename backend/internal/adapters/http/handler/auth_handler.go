@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/services"
@@ -66,15 +68,29 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 	response, err := h.authService.Login(c.Context(), &req)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
+		return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
 			Success: false,
 			Message: "เข้าสู่ระบบไม่สำเร็จ",
 			Error:   err.Error(),
 		})
 	}
+	c.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    response.Token,
+		Expires:  time.Now().Add(15 * time.Minute),
+		HTTPOnly: true,
+		SameSite: "Strict",
+	})
 	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
 		Success: true,
 		Message: "เข้าสู่ระบบสำเร็จ",
 		Data:    response,
+	})
+}
+
+func (h *AuthHandler) Helloworld(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
+		Success: true,
+		Message: "helloworld",
 	})
 }
