@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
@@ -18,10 +20,11 @@ type AuthService struct {
 	rdb      *redis.Client
 }
 
-func NewAuthService(userRepo repositories.UserRepository, roleRepo repositories.RoleRepository) services.AuthService {
+func NewAuthService(userRepo repositories.UserRepository, roleRepo repositories.RoleRepository, rdb *redis.Client) services.AuthService {
 	return &AuthService{
 		userRepo: userRepo,
 		roleRepo: roleRepo,
+		rdb:      rdb,
 	}
 }
 
@@ -90,9 +93,20 @@ func (s *AuthService) CachePermissions(ctx context.Context, userID uuid.UUID) er
 		return err
 	}
 	key := "user:permissions:" + userID.String()
-	s.rdb.Del(ctx, key)
+	if err := s.rdb.Del(ctx, key); err != nil {
+		log.Printf("cannot clear cache:%v", err)
+	}
+	pers := make([]interface{}, 0, len(user.Role.Permissions))
 	for _, p := range user.Role.Permissions {
-		s.rdb.SAdd(ctx, key, p.Name)
+		pers = append(pers, p.Name)
+	}
+	if len(pers) > 0 {
+		if err := s.rdb.SAdd(ctx, key, pers...).Err(); err != nil {
+			return err
+		}
+		if err := s.rdb.Expire(ctx, key, 1*time.Hour).Err(); err != nil {
+			return err
+		}
 	}
 	return nil
 }

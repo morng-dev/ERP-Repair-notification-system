@@ -60,7 +60,7 @@ func (r *UserRepository) GetUser(ctx context.Context, page, limit int) ([]*entit
 }
 func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.User, error) {
 	var user models.User
-	if err := r.db.WithContext(ctx).Preload("Role").First(&user, "id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Role.Permissions").Preload("Role").First(&user, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return r.modelToEntity(&user), nil

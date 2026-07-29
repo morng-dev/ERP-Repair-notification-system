@@ -25,8 +25,9 @@ type User struct {
 	CreatedAt        time.Time  `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt        time.Time  `gorm:"autoUpdateTime" json:"updated_at"`
 
-	Assets  []Assets `gorm:"foreignKey:OwnerID" json:"assets,omitempty"`
-	Chanals []Chanal `gorm:"many2many:user_chanals;" json:"chanals,omitempty"`
+	Assets      []Assets     `gorm:"foreignKey:OwnerID" json:"assets,omitempty"`
+	Chanals     []Chanal     `gorm:"many2many:user_chanals;" json:"chanals,omitempty"`
+	Permissions []Permission `gorm:"many2many:user_permissions;"`
 }
 
 type Profession struct {

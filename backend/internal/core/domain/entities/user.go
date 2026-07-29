@@ -7,18 +7,18 @@ import (
 )
 
 type User struct {
-	ID       uuid.UUID `json:"id"`
-	Email    string    `json:"email"`
-	Firsname string    `json:"first_name"`
-	Lastname string    `json:"last_name"`
-	Avatar   string    `json:"avatar"`
-	Active   bool      `json:"active"`
-	// ProfessionID uuid.UUID   `json:"profession_id"`
-	// Profession   *Profession `json:"profession,omitempty"`
-	RoleID    uuid.UUID `json:"role_id"`
-	Role      *Role     `json:"role,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID           uuid.UUID   `json:"id"`
+	Email        string      `json:"email"`
+	Firsname     string      `json:"first_name"`
+	Lastname     string      `json:"last_name"`
+	Avatar       string      `json:"avatar"`
+	Active       bool        `json:"active"`
+	ProfessionID uuid.UUID   `json:"profession_id"`
+	Profession   *Profession `json:"profession,omitempty"`
+	RoleID       uuid.UUID   `json:"role_id"`
+	Role         *Role       `json:"role,omitempty"`
+	CreatedAt    time.Time   `json:"created_at"`
+	UpdatedAt    time.Time   `json:"updated_at"`
 }
 
 type Profession struct {

@@ -20,7 +20,7 @@ func main() {
 	userRepo := repositories.NewUserRepository(db)
 	roleRepo := repositories.NewRoleRepository(db)
 
-	authrService := services.NewAuthService(userRepo, roleRepo)
+	authrService := services.NewAuthService(userRepo, roleRepo, redis)
 
 	authHandler := handler.NewAuthHandler(authrService)
 
