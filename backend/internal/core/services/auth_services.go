@@ -4,17 +4,21 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
+	"github.com/morng-dev/erp/internal/core/domain/ports/services"
 	"github.com/morng-dev/erp/pkg/utils"
+	"github.com/redis/go-redis/v9"
 )
 
 type AuthService struct {
 	userRepo repositories.UserRepository
 	roleRepo repositories.RoleRepository
+	rdb      *redis.Client
 }
 
-func NewAuthService(userRepo repositories.UserRepository, roleRepo repositories.RoleRepository) *AuthService {
+func NewAuthService(userRepo repositories.UserRepository, roleRepo repositories.RoleRepository) services.AuthService {
 	return &AuthService{
 		userRepo: userRepo,
 		roleRepo: roleRepo,
@@ -78,4 +82,17 @@ func (s *AuthService) Login(ctx context.Context, req *entities.LoginRequest) (*e
 		Token: token,
 		User:  *user,
 	}, nil
+}
+
+func (s *AuthService) CachePermissions(ctx context.Context, userID uuid.UUID) error {
+	user, err := s.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+	key := "user:permissions:" + userID.String()
+	s.rdb.Del(ctx, key)
+	for _, p := range user.Role.Permissions {
+		s.rdb.SAdd(ctx, key, p.Name)
+	}
+	return nil
 }

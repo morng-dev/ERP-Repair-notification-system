@@ -15,8 +15,8 @@ import (
 func main() {
 	cfg := config.LoadCongig()
 	db := config.Setupdatabase(cfg)
-	authMW := middleware.NewNewAuthMiddleware(cfg.JWTSecret)
-	// redis := config.SetupRedis(cfg)
+	redis := config.SetupRedis(cfg)
+	authMW := middleware.NewNewAuthMiddleware(cfg.JWTSecret, redis)
 	userRepo := repositories.NewUserRepository(db)
 	roleRepo := repositories.NewRoleRepository(db)
 
