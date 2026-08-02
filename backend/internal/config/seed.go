@@ -10,6 +10,7 @@ import (
 func SeedDatabase(db *gorm.DB) error {
 	log.Println("start database seeding...")
 	seedRoles(db)
+	seedPermission(db)
 	log.Println("seeding database success")
 	return nil
 }
@@ -43,5 +44,59 @@ func seedRoles(db *gorm.DB) error {
 		}
 	}
 
+	return nil
+}
+
+func seedPermission(db *gorm.DB) error {
+	permissions := []models.Permission{
+		{
+			Name:        "view_users",
+			Description: "see all user",
+		},
+		{
+			Name:        "create_users",
+			Description: "create users",
+		},
+		{
+			Name:        "edit_users",
+			Description: "edit users",
+		},
+		{
+			Name:        "delete_users",
+			Description: "delete user!!!",
+		},
+		{
+			Name:        "view_roles",
+			Description: "view all roles",
+		},
+		{
+			Name:        "create_roles",
+			Description: "create roles",
+		},
+		{
+			Name:        "edit_roles",
+			Description: "update roles user",
+		},
+		{
+			Name:        "delete_role",
+			Description: "delete role !!!!",
+		},
+	}
+
+	for _, permission := range permissions {
+		var existingPermission models.Permission
+		if err := db.Where("name = ?", permission.Name).First(&existingPermission).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				if err := db.Create(&permission).Error; err != nil {
+					log.Printf("❌ Error creating role %s: %v", permission.Name, err)
+					return err
+				}
+				log.Printf("✅ Role created: %s", permission.Name)
+			} else {
+				log.Printf("❌ Error checking role %s: %v", permission.Name, err)
+				return err
+			}
+		}
+	}
 	return nil
 }

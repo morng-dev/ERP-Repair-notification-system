@@ -25,10 +25,14 @@ type Profession struct {
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
+	Users       []User    `json:"users,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
-
+type UpdateProfesion struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
 type UpdateUser struct {
 	FirstName string
 	LastName  string
