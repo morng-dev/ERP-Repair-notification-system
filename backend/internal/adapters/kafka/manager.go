@@ -1,18 +1,13 @@
 package kafka
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"time"
 
 	"github.com/segmentio/kafka-go"
 )
-
-type Event struct {
-	Type string          `json:"type"`
-	Data json.RawMessage `json:"data"`
-}
 
 type KafkaManager struct {
 	addr string
@@ -22,21 +17,23 @@ func NewKafkaManager(addr string) *KafkaManager {
 	return &KafkaManager{addr: addr}
 }
 
-func (km *KafkaManager) EnsureTopics(topics []string) error {
+func (km *KafkaManager) Entopic(topics []string) error {
 	kafkaConn, err := kafka.Dial("tcp", km.addr)
 	if err != nil {
-		return fmt.Errorf("fail to connected kafka : %v", err)
+		return fmt.Errorf("failed to connect kafka %v", err)
 	}
 	defer kafkaConn.Close()
+
 	controller, err := kafkaConn.Controller()
 	if err != nil {
-		return fmt.Errorf("fail to get controller")
+		return fmt.Errorf("failed to get controller %v", err)
 	}
-	controllerConn, err := kafka.Dial("tcp", net.JoinHostPort(controller.Host, fmt.Sprint(controller.Port)))
+	kafkaControllerConn, err := kafka.Dial("tcp", net.JoinHostPort(controller.Host, fmt.Sprint(controller.Port)))
 	if err != nil {
-		return fmt.Errorf("fail to connect kafka controller")
+		return fmt.Errorf("failed to connect Kafka controller %v", err)
 	}
-	defer controllerConn.Close()
+	defer kafkaControllerConn.Close()
+
 	topicConfig := []kafka.TopicConfig{}
 
 	for _, topic := range topics {
@@ -46,30 +43,33 @@ func (km *KafkaManager) EnsureTopics(topics []string) error {
 			ReplicationFactor: 1,
 		})
 	}
-	return controllerConn.CreateTopics(topicConfig...)
-}
-
-func (km *KafkaManager) HealCheck() error {
-	kafkaConn, err := kafka.Dial("tcp", km.addr)
-	if err != nil {
-		return err
-	}
-	defer kafkaConn.Close()
-
-	_, err = kafkaConn.Brokers()
-	if err != nil {
-		return err
+	err = kafkaControllerConn.CreateTopics(topicConfig...)
+	if err != nil && !errors.Is(err, kafka.TopicAlreadyExists) {
+		return fmt.Errorf("failed to create topics: %w", err)
 	}
 	return nil
 }
 
-func WaitKafka(addr string, timeout time.Duration) error {
-	km := NewKafkaManager(addr)
+func (km *KafkaManager) HealthCheck() error {
+	conn, err := kafka.Dial("tcp", km.addr)
+	if err != nil {
+		return fmt.Errorf("fail to connect kafka : %v", err)
+	}
+	defer conn.Close()
 
+	_, err = conn.Brokers()
+	if err != nil {
+		return fmt.Errorf("cannot get brockers")
+	}
+	return nil
+}
+
+func WaitKafkaReady(addr string, timeout time.Duration) error {
+	km := NewKafkaManager(addr)
 	deadline := time.Now().Add(timeout)
 
 	for time.Now().Before(deadline) {
-		if err := km.HealCheck(); err == nil {
+		if km.HealthCheck() == nil {
 			return nil
 		}
 		time.Sleep(1 * time.Second)

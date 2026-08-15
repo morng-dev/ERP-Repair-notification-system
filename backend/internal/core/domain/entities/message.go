@@ -25,3 +25,7 @@ type Chanal struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
+
+type UpdateMessage struct {
+	Messages string `json:"messages"`
+}

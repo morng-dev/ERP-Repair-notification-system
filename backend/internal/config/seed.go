@@ -11,6 +11,7 @@ func SeedDatabase(db *gorm.DB) error {
 	log.Println("start database seeding...")
 	seedRoles(db)
 	seedPermission(db)
+	seedProfessions(db)
 	log.Println("seeding database success")
 	return nil
 }
@@ -94,6 +95,32 @@ func seedPermission(db *gorm.DB) error {
 				log.Printf("✅ Role created: %s", permission.Name)
 			} else {
 				log.Printf("❌ Error checking role %s: %v", permission.Name, err)
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func seedProfessions(db *gorm.DB) error {
+	professions := []models.Profession{
+		{
+			Name:        "IT subport",
+			Description: "maintains and troubleshoots an organization's computer systems, networks",
+		},
+	}
+
+	for _, profession := range professions {
+		var exitsProfession models.Profession
+		if err := db.Where("name = ?", profession.Name).First(&exitsProfession).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				if err := db.Create(&profession).Error; err != nil {
+					log.Printf("❌ Error creating role %s: %v", profession.Name, err)
+					return err
+				}
+				log.Printf("✅ Role created: %s", profession.Name)
+			} else {
+				log.Printf("❌ Error checking role %s: %v", profession.Name, err)
 				return err
 			}
 		}
