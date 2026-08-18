@@ -14,7 +14,7 @@ type Message struct {
 	Receiver   *User     `json:"receiver"`
 	ChanalID   uuid.UUID `json:"chanal_id"`
 	Chanal     *Chanal   `json:"chanal"`
-	Messages   string    `json:"messages"`
+	Conteant   string    `json:"conteant"`
 	TimeStamp  int64     `json:"timestamp"`
 }
 
@@ -27,5 +27,5 @@ type Chanal struct {
 }
 
 type UpdateMessage struct {
-	Messages string `json:"messages"`
+	Content string `json:"content"`
 }

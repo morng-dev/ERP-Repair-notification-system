@@ -17,7 +17,7 @@ type Message struct {
 	ChanalID uuid.UUID `json:"chanal_id"`
 	Chanal   Chanal    `gorm:"foreignKey:ChanalID;references:ID" json:"chanal"`
 
-	Messages  string `json:"messages"`
+	Conteant  string `json:"messages"`
 	TimeStamp int64  `json:"timestamp"`
 }
 
