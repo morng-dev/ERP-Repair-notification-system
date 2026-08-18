@@ -32,7 +32,14 @@ func (r *MessageRepository) Create(ctx context.Context, message *entities.Messag
 	}
 	return nil
 }
-func (r *MessageRepository) GetByID(ctx context.Context, messageID uuid.UUID) (*entities.Message, error)
+func (r *MessageRepository) GetByID(ctx context.Context, messageID uuid.UUID) (*entities.Message, error) {
+	var msg models.Message
+
+	if err := r.db.WithContext(ctx).Preload("Sender").Preload("Receiver").First(&msg, "id = ?", messageID).Error; err != nil {
+		return nil, err
+	}
+	return r.modelsToEntities(&msg), nil
+}
 
 func (r *MessageRepository) GetByChanel(ctx context.Context, chanalID uuid.UUID) ([]*entities.Message, error)
 
@@ -59,6 +66,18 @@ func (r *MessageRepository) modelsToEntities(msgModel *models.Message) *entities
 			Active:    msgModel.Sender.Active,
 			CreatedAt: msgModel.Sender.CreatedAt,
 			UpdatedAt: msgModel.Sender.UpdatedAt,
+		}
+	}
+	if msgModel.Receiver.ID != uuid.Nil {
+		msg.Receiver = &entities.User{
+			ID:        msgModel.ReceiverID,
+			Email:     msgModel.Receiver.Email,
+			Firsname:  msgModel.Receiver.FirstName,
+			Lastname:  msgModel.Receiver.LastName,
+			Avatar:    msgModel.Receiver.Avatar,
+			Active:    msgModel.Receiver.Active,
+			CreatedAt: msgModel.Receiver.CreatedAt,
+			UpdatedAt: msgModel.Receiver.UpdatedAt,
 		}
 	}
 	return msg
