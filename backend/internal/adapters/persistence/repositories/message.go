@@ -41,11 +41,25 @@ func (r *MessageRepository) GetByID(ctx context.Context, messageID uuid.UUID) (*
 	return r.modelsToEntities(&msg), nil
 }
 
-func (r *MessageRepository) GetByChanel(ctx context.Context, chanalID uuid.UUID) ([]*entities.Message, error)
+func (r *MessageRepository) GetByChanel(ctx context.Context, chanalID uuid.UUID) (*entities.Message, error) {
+	var msgChanel models.Message
+	if err := r.db.WithContext(ctx).Where("ChanalID = ?", chanalID).First(&msgChanel).Error; err != nil {
+		return nil, err
+	}
+	return r.modelsToEntities(&msgChanel), nil
+}
 
-func (r *MessageRepository) Delete(ctx context.Context, messageID uuid.UUID) error
+func (r *MessageRepository) Delete(ctx context.Context, messageID uuid.UUID) error {
+	return r.db.WithContext(ctx).Delete(&models.Message{}, "id = ?", messageID).Error
+}
 
-func (r *MessageRepository) Update(ctx context.Context, req *entities.UpdateMessage) error
+func (r *MessageRepository) Update(ctx context.Context, messageID uuid.UUID, req *entities.UpdateMessage) error {
+	updates := map[string]interface{}{}
+	if req.Content != "" {
+		updates["Content"] = req.Content
+	}
+	return r.db.WithContext(ctx).Model(&models.Message{}).Where("id = ?", messageID).Error
+}
 
 func (r *MessageRepository) modelsToEntities(msgModel *models.Message) *entities.Message {
 	msg := &entities.Message{
