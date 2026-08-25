@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/adapters/persistence/models"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
@@ -32,6 +33,18 @@ func (r *roleRepository) GetByName(ctx context.Context, name string) (*entities.
 	}
 
 	return r.modelToEntity(&role), nil
+}
+
+func (r *roleRepository) Edit(ctx context.Context, roleID uuid.UUID, req *entities.RoleUpdate) error {
+	updates := map[string]interface{}{}
+
+	if req.Name != "" {
+		updates["Name"] = req.Name
+	}
+	if req.Description != "" {
+		updates["Description"] = req.Description
+	}
+	return r.db.WithContext(ctx).Model(models.Role{}).Where("id = ?", roleID).Updates(updates).Error
 }
 
 func (r *roleRepository) modelToEntity(role *models.Role) *entities.Role {
