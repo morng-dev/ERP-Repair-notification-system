@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -8,6 +9,11 @@ import (
 
 	"github.com/segmentio/kafka-go"
 )
+
+type Event struct {
+	Type string          `json:"type"`
+	Data json.RawMessage `json:"data"`
+}
 
 type KafkaManager struct {
 	addr string

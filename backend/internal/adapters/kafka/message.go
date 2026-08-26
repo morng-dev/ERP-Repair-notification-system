@@ -2,6 +2,8 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -95,5 +97,78 @@ func NewMessageManager(kafaAddr string, nodeID string, handler MessageHandler) (
 		cancel:        cancel,
 	}
 	log.Println("Message Manager Initialized")
+	go mm.listenToMessage()
 	return mm, nil
+}
+
+func (mm *MessageManager) PublicMessage(msg *Message) error {
+	msg.MessageID = fmt.Sprintf(msg.FromUserId, msg.ToUSerId, msg.Timestamp)
+
+	dataByte, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	event := &Event{
+		Type: "message",
+		Data: json.RawMessage(dataByte),
+	}
+
+	eventByte, err := json.Marshal(event)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	keyConv := GetConv(msg.FromUserId, msg.ToUSerId)
+	kafkaMsg := kafka.Message{
+		Topic: "message",
+		Key:   []byte(keyConv),
+		Value: eventByte,
+	}
+	return mm.kafkaWrtier.WriteMessages(ctx, kafkaMsg)
+}
+
+func (mm *MessageManager) listenToMessage() {
+	log.Println("kafka message stating")
+	for {
+		select {
+		case <-mm.ctx.Done():
+			return
+		default:
+		}
+		msg, err := mm.messageReader.ReadMessage(mm.ctx)
+		if err != nil {
+			if err == context.Canceled {
+				return
+			}
+			log.Printf("kafka Read error: %v", err)
+			time.Sleep(1 * time.Second)
+			continue
+		}
+		var event Event
+		if err := json.Unmarshal(msg.Value, &event); err != nil {
+			log.Printf("Error unmarshaling event : %v", err)
+			continue
+		}
+		if event.Type == "message" {
+			var chatMsg Message
+			if err := json.Unmarshal(event.Data, &chatMsg); err != nil {
+				log.Printf("Error unmarshaling message : %v", err)
+				continue
+			}
+			if !mm.MessageCaChe.Add(chatMsg.MessageID) {
+				log.Printf("Duplicated message Ignored:%s", chatMsg.MessageID)
+				continue
+			}
+			log.Printf("pocess new message from: %s to %s", chatMsg.FromUserId, chatMsg.ToUSerId)
+			mm.handler.DeliverMessage(&chatMsg)
+		}
+	}
+}
+
+func GetConv(userID1, userID2 string) string {
+	if userID1 > userID2 {
+		return userID2 + "-" + userID1
+	}
+	return userID1 + "-" + userID2
 }
