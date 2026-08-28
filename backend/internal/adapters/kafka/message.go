@@ -19,20 +19,20 @@ type Message struct {
 	MessageID  string `json:"message_id,omitempty"`
 }
 
-type MessageCaChe struct {
+type MessageCache struct {
 	messages map[string]int64
 	mu       sync.RWMutex
 }
 
-func NewMessageCache() *MessageCaChe {
-	cache := &MessageCaChe{
+func NewMessageCache() *MessageCache {
+	cache := &MessageCache{
 		messages: make(map[string]int64),
 	}
 	go cache.cleanup()
 	return cache
 }
 
-func (mc *MessageCaChe) cleanup() {
+func (mc *MessageCache) cleanup() {
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
@@ -47,7 +47,7 @@ func (mc *MessageCaChe) cleanup() {
 		mc.mu.Unlock()
 	}
 }
-func (mc *MessageCaChe) Add(messageID string) bool {
+func (mc *MessageCache) Add(messageID string) bool {
 	mc.mu.Lock()
 	defer mc.mu.Unlock()
 	if _, exits := mc.messages[messageID]; exits {
@@ -64,7 +64,7 @@ type MessageHandler interface {
 type MessageManager struct {
 	kafkaWrtier   *kafka.Writer
 	messageReader *kafka.Reader
-	MessageCaChe  *MessageCaChe
+	MessageCaChe  *MessageCache
 	handler       MessageHandler
 	ctx           context.Context
 	cancel        context.CancelFunc
@@ -108,7 +108,7 @@ func (mm *MessageManager) PublicMessage(msg *Message) error {
 	if err != nil {
 		return err
 	}
-	event := &Event{
+	event := Event{
 		Type: "message",
 		Data: json.RawMessage(dataByte),
 	}

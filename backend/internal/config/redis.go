@@ -22,9 +22,5 @@ func SetupRedis(cfg *Config) *redis.Client {
 		log.Fatal("Redis error:", err)
 	}
 
-	if err := client.Ping(context.Background()).Err(); err != nil {
-		log.Fatal(err)
-	}
-
 	return client
 }
