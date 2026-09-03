@@ -19,7 +19,7 @@ func NewUserRepository(db *gorm.DB) repositories.UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) Create(ctx context.Context, user *entities.User, password string) error {
+func (r *UserRepository) Create(ctx context.Context, user *entities.User, password string) (*entities.User, error) {
 	userModel := &models.User{
 		Email:     user.Email,
 		Password:  password,
@@ -31,16 +31,13 @@ func (r *UserRepository) Create(ctx context.Context, user *entities.User, passwo
 	}
 
 	if err := r.db.WithContext(ctx).Create(userModel).Error; err != nil {
-		return err
+		return nil, err
 	}
 
-	user.ID = userModel.ID
-	user.CreatedAt = userModel.CreatedAt
-	user.UpdatedAt = userModel.UpdatedAt
-	return nil
+	return r.modelToEntity(userModel), nil
 }
 
-func (r *UserRepository) GetUser(ctx context.Context, page, limit int) ([]*entities.User, int, error) {
+func (r *UserRepository) GetAll(ctx context.Context, page, limit int) ([]*entities.User, int, error) {
 	var users []models.User
 	var total int64
 
@@ -98,6 +95,10 @@ func (r *UserRepository) GetPasswordHash(ctx context.Context, id uuid.UUID) (str
 		return "", err
 	}
 	return user.Password, nil
+}
+
+func (r *UserRepository) UpdateProfession(ctx context.Context, userID, profesID uuid.UUID) error {
+	return r.db.Model(models.User{}).Where("id = ?", userID).Update("profession_id", profesID).Error
 }
 
 func (r *UserRepository) modelToEntity(userModel *models.User) *entities.User {

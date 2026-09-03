@@ -8,11 +8,12 @@ import (
 )
 
 type UserRepository interface {
-	Create(ctx context.Context, user *entities.User, password string) error
+	Create(ctx context.Context, user *entities.User, password string) (*entities.User, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*entities.User, error)
 	GetByEmail(ctx context.Context, email string) (*entities.User, error)
-	GetUser(ctx context.Context, page, limit int) ([]*entities.User, int, error)
+	GetAll(ctx context.Context, page, limit int) ([]*entities.User, int, error)
 	Update(ctx context.Context, id uuid.UUID, req *entities.UpdateUser) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	GetPasswordHash(ctx context.Context, id uuid.UUID) (string, error)
+	UpdateProfession(ctx context.Context, userID, profesID uuid.UUID) error
 }

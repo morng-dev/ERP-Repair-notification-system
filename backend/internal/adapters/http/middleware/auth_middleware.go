@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
@@ -9,14 +11,14 @@ import (
 )
 
 type AuthMiddleware struct {
-	jwtSecret string
-	rdb       *redis.Client
+	jwtSecret   string
+	clientRedis *redis.Client
 }
 
-func NewNewAuthMiddleware(jwtSecret string, rdb *redis.Client) *AuthMiddleware {
+func NewAuthMiddleware(jwtSecret string, clientRedis *redis.Client) *AuthMiddleware {
 	return &AuthMiddleware{
-		jwtSecret: jwtSecret,
-		rdb:       rdb,
+		jwtSecret:   jwtSecret,
+		clientRedis: clientRedis,
 	}
 }
 
@@ -24,16 +26,18 @@ func (m *AuthMiddleware) AuthRequire() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		tokenString := c.Cookies("access_token")
 		if tokenString == "" {
+			authHeader := c.Get("Authorization")
+			if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+				tokenString = strings.TrimPrefix(authHeader, "Bearer ")
+			}
+		}
+
+		if tokenString == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
-				Message: "missing access_token cookie",
+				Message: "missing access token",
 			})
 		}
-		// tokenString := strings.TrimPrefix(AuthoHeader, "Bearer ")
-		// if tokenString == AuthoHeader {
-		// 	return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
-		// 		Message: "invalid authorization format",
-		// 	})
-		// }
+
 		claims, err := utils.ValidateJWT(tokenString)
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
@@ -57,7 +61,7 @@ func (m *AuthMiddleware) PermissionRequire(permission string) fiber.Handler {
 			})
 		}
 		key := "user:permissions:" + userID.String()
-		exists, err := m.rdb.SIsMember(c.Context(), key, permission).Result()
+		exists, err := m.clientRedis.SIsMember(c.Context(), key, permission).Result()
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(entities.ErrorResponse{
 				Message: "error checking permissions",

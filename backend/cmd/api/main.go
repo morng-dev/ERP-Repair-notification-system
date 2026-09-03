@@ -10,6 +10,7 @@ import (
 	"github.com/morng-dev/erp/internal/adapters/http/handler"
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
 	"github.com/morng-dev/erp/internal/adapters/http/routes"
+	"github.com/morng-dev/erp/internal/adapters/persistence/redis"
 	"github.com/morng-dev/erp/internal/adapters/persistence/repositories"
 	"github.com/morng-dev/erp/internal/config"
 	"github.com/morng-dev/erp/internal/core/services"
@@ -18,12 +19,14 @@ import (
 func main() {
 	cfg := config.LoadCongig()
 	db := config.Setupdatabase(cfg)
-	redis := config.SetupRedis(cfg)
-	authMW := middleware.NewNewAuthMiddleware(cfg.JWTSecret, redis)
+	clientRedis := config.SetupRedis(cfg)
+
+	userRedisRepo := redis.NewUserRedisRepo(clientRedis)
+	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis)
 	userRepo := repositories.NewUserRepository(db)
 	roleRepo := repositories.NewRoleRepository(db)
 
-	authrService := services.NewAuthService(userRepo, roleRepo, redis)
+	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo)
 
 	authHandler := handler.NewAuthHandler(authrService)
 

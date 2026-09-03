@@ -59,7 +59,27 @@ func NewOrderManager(kafkaAddr string, nodeID string, handler OrderHandler) (*Or
 }
 
 func (om *OrderManager) PublicMessageOrder(msg *Order) error {
-	msg.EventID := fmt.Sprintf(msg.OrderID, msg.UserID, msg.Timestamp)
+	msg.EventID = fmt.Sprintf(msg.OrderID, msg.UserID, msg.Timestamp)
+
+	dataByte, err := json.Marshal(&msg)
+	if err != nil {
+		return err
+	}
+	event := &Event{
+		Type: "ordermessage",
+		Data: json.RawMessage(dataByte),
+	}
+	eventByte, err := json.Marshal(&event)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	OrderMsg := kafka.Message{
+		Topic: "order-message",
+		Value: eventByte,
+	}
+	return om.kafkaWrtier.WriteMessages(ctx, OrderMsg)
 }
 
 func (om *OrderManager) listenToOrder() {

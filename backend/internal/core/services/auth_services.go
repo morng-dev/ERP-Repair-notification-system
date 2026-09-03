@@ -3,28 +3,25 @@ package services
 import (
 	"context"
 	"errors"
-	"log"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
+	"github.com/morng-dev/erp/internal/core/domain/ports/cache"
 	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
 	"github.com/morng-dev/erp/internal/core/domain/ports/services"
 	"github.com/morng-dev/erp/pkg/utils"
-	"github.com/redis/go-redis/v9"
 )
 
 type AuthService struct {
-	userRepo repositories.UserRepository
-	roleRepo repositories.RoleRepository
-	rdb      *redis.Client
+	userRepo      repositories.UserRepository
+	roleRepo      repositories.RoleRepository
+	UserRedisRepo cache.UserRedisRepo
 }
 
-func NewAuthService(userRepo repositories.UserRepository, roleRepo repositories.RoleRepository, rdb *redis.Client) services.AuthService {
+func NewAuthService(userRepo repositories.UserRepository, roleRepo repositories.RoleRepository, UserRedisRepo cache.UserRedisRepo) services.AuthService {
 	return &AuthService{
-		userRepo: userRepo,
-		roleRepo: roleRepo,
-		rdb:      rdb,
+		userRepo:      userRepo,
+		roleRepo:      roleRepo,
+		UserRedisRepo: UserRedisRepo,
 	}
 }
 
@@ -52,11 +49,11 @@ func (s *AuthService) Register(ctx context.Context, req *entities.RegisterReques
 		RoleID:   userRole.ID,
 	}
 
-	if err := s.userRepo.Create(ctx, user, hashPassword); err != nil {
+	result, err := s.userRepo.Create(ctx, user, hashPassword)
+	if err != nil {
 		return nil, err
 	}
-
-	return s.userRepo.GetByID(ctx, user.ID)
+	return result, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, req *entities.LoginRequest) (*entities.LoginResponse, error) {
@@ -85,28 +82,4 @@ func (s *AuthService) Login(ctx context.Context, req *entities.LoginRequest) (*e
 		Token: token,
 		User:  *user,
 	}, nil
-}
-
-func (s *AuthService) CachePermissions(ctx context.Context, userID uuid.UUID) error {
-	user, err := s.userRepo.GetByID(ctx, userID)
-	if err != nil {
-		return err
-	}
-	key := "user:permissions:" + userID.String()
-	if err := s.rdb.Del(ctx, key); err != nil {
-		log.Printf("cannot clear cache:%v", err)
-	}
-	pers := make([]interface{}, 0, len(user.Role.Permissions))
-	for _, p := range user.Role.Permissions {
-		pers = append(pers, p.Name)
-	}
-	if len(pers) > 0 {
-		if err := s.rdb.SAdd(ctx, key, pers...).Err(); err != nil {
-			return err
-		}
-		if err := s.rdb.Expire(ctx, key, 1*time.Hour).Err(); err != nil {
-			return err
-		}
-	}
-	return nil
 }
