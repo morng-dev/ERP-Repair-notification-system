@@ -18,18 +18,16 @@ func NewProfessionRepository(db *gorm.DB) repositories.ProfessionRepository {
 	return &ProfessionRepository{db: db}
 }
 
-func (r *ProfessionRepository) Create(ctx context.Context, req *entities.Profession) error {
+func (r *ProfessionRepository) Create(ctx context.Context, req *entities.Profession) (*entities.Profession, error) {
 	profess := &models.Profession{
 		Name:        req.Name,
 		Description: req.Description,
 	}
 	if err := r.db.WithContext(ctx).Create(&profess).Error; err != nil {
-		return err
+		return nil, err
 	}
-	req.ID = profess.ID
-	req.CreatedAt = profess.CreatedAt
-	req.UpdatedAt = profess.UpdatedAt
-	return nil
+
+	return r.modelsToEntities(profess), nil
 }
 func (r *ProfessionRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.Profession, error) {
 	var profess models.Profession

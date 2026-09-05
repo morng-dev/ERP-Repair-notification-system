@@ -82,8 +82,8 @@ func NewMessageManager(kafaAddr string, nodeID string, handler MessageHandler) (
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafaAddr},
-		Topic:          "test-topic",
-		GroupID:        "test-group-" + nodeID,
+		Topic:          "message-topic",
+		GroupID:        "message-group-" + nodeID,
 		MaxBytes:       10e6,
 		CommitInterval: time.Second,
 	})
@@ -121,7 +121,7 @@ func (mm *MessageManager) PublicMessage(msg *Message) error {
 	defer cancel()
 	keyConv := GetConv(msg.FromUserId, msg.ToUSerId)
 	kafkaMsg := kafka.Message{
-		Topic: "message",
+		Topic: "message-topic",
 		Key:   []byte(keyConv),
 		Value: eventByte,
 	}
