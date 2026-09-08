@@ -25,8 +25,10 @@ func main() {
 	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis)
 	userRepo := repositories.NewUserRepository(db)
 	roleRepo := repositories.NewRoleRepository(db)
+	profesRepo := repositories.NewProfessionRepository(db)
 
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo)
+	profesService := services.NewProfessionsService(profesRepo)
 
 	authHandler := handler.NewAuthHandler(authrService)
 

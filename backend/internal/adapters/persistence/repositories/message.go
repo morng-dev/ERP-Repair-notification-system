@@ -58,7 +58,7 @@ func (r *MessageRepository) Update(ctx context.Context, messageID uuid.UUID, req
 	if req.Content != "" {
 		updates["Content"] = req.Content
 	}
-	return r.db.WithContext(ctx).Model(&models.Message{}).Where("id = ?", messageID).Error
+	return r.db.WithContext(ctx).Model(&models.Message{}).Where("id = ?", messageID).Updates(updates).Error
 }
 
 func (r *MessageRepository) modelsToEntities(msgModel *models.Message) *entities.Message {

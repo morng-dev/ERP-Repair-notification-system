@@ -7,17 +7,21 @@ import (
 )
 
 type Routes struct {
-	authMW      *middleware.AuthMiddleware
-	authHandler *handler.AuthHandler
+	authMW        *middleware.AuthMiddleware
+	authHandler   *handler.AuthHandler
+	profesHandler *handler.ProfessionHandler
 }
 
 func NewRoutes(
 	authMW *middleware.AuthMiddleware,
 	authHandler *handler.AuthHandler,
+	profesHandler *handler.ProfessionHandler,
+
 ) *Routes {
 	return &Routes{
-		authHandler: authHandler,
-		authMW:      authMW,
+		authHandler:   authHandler,
+		authMW:        authMW,
+		profesHandler: profesHandler,
 	}
 }
 
