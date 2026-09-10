@@ -11,10 +11,11 @@ import (
 )
 
 type PermissionsRepository struct {
-	db *gorm.DB
+	db              *gorm.DB
+	permissionsRepo repositories.PermissionsRepository
 }
 
-func NewPermissionsRepository(db *gorm.DB) repositories.PermissionsRepository {
+func NewPermissionsRepository(db *gorm.DB, permissionsRepo repositories.PermissionsRepository) repositories.PermissionsRepository {
 	return &PermissionsRepository{db: db}
 }
 
@@ -80,6 +81,18 @@ func (r *PermissionsRepository) Update(ctx context.Context, id uuid.UUID, req *e
 
 func (r *PermissionsRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Delete(&models.Permission{}, "id = ?", id).Error
+}
+
+func (r *PermissionsRepository) HasPermission(ctx context.Context, userID uuid.UUID, permissRequire string) (bool, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&models.Permission{}).
+		Joins("JOIN role_permissions rp ON rp.permission_id = permission.id").
+		Joins("JOIN users u ON u.role_id = rp.role_id").
+		Where("u.id = ? AND permissions.name = ?", userID, permissRequire).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 func (r *PermissionsRepository) modelToEntity(permissModel *models.Permission) *entities.Permission {

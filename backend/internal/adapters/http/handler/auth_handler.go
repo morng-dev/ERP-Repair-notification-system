@@ -88,10 +88,3 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		Data:    response,
 	})
 }
-
-func (h *AuthHandler) Helloworld(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
-		Success: true,
-		Message: "helloworld",
-	})
-}

@@ -31,6 +31,7 @@ func main() {
 	profesService := services.NewProfessionsService(profesRepo)
 
 	authHandler := handler.NewAuthHandler(authrService)
+	profesHandler := handler.NewProfessionsHandler(profesService)
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -49,6 +50,7 @@ func main() {
 	routes := routes.NewRoutes(
 		authMW,
 		authHandler,
+		profesHandler,
 	)
 	routes.SetUpRoute(app)
 

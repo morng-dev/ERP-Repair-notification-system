@@ -25,6 +25,13 @@ func NewRoutes(
 	}
 }
 
+const (
+	PermissionCreateProfession = "create_profession"
+	PermissionReadProfession   = "read_profession"
+	PermissionUpdateProfession = "update_profession"
+	PermissionDeleteProfession = "delete_profession"
+)
+
 func (r *Routes) SetUpRoute(app *fiber.App) {
 
 	api := app.Group("/api/v1")
@@ -33,5 +40,6 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	auth.Post("/register", r.authHandler.Register)
 	auth.Post("/login", r.authHandler.Login)
 
-	auth.Get("/", r.authMW.AuthRequire(), r.authHandler.Helloworld)
+	profession := app.Group("/profession", r.authMW.AuthRequire())
+	profession.Post("/", r.authMW.PermissionRequire(PermissionCreateProfession))
 }

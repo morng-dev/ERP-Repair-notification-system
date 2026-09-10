@@ -14,4 +14,5 @@ type PermissionsRepository interface {
 	GetAll(ctx context.Context, page, limit int) ([]*entities.Permission, int, error)
 	Update(ctx context.Context, id uuid.UUID, req *entities.Permission) error
 	Delete(ctx context.Context, id uuid.UUID) error
+	HasPermission(ctx context.Context, userID uuid.UUID, permission string) (bool, error)
 }

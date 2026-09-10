@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/morng-dev/erp/internal/adapters/kafka"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/services"
 	"github.com/morng-dev/erp/pkg/utils"
@@ -17,6 +18,8 @@ func NewProfessionsHandler(professService services.ProfressionService) *Professi
 
 func (h *ProfessionHandler) CreateProfession(c *fiber.Ctx) error {
 	var req entities.Profession
+	var message *kafka.Message
+	var handler kafka.MessageHandler
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
 			Success: false,
@@ -40,6 +43,7 @@ func (h *ProfessionHandler) CreateProfession(c *fiber.Ctx) error {
 			Error:   err.Error(),
 		})
 	}
+	handler.DeliverMessage(message)
 	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
 		Success: true,
 		Message: "created success fully",

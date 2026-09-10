@@ -5,20 +5,23 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/morng-dev/erp/internal/adapters/persistence/repositories"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/pkg/utils"
 	"github.com/redis/go-redis/v9"
 )
 
 type AuthMiddleware struct {
-	jwtSecret   string
-	clientRedis *redis.Client
+	jwtSecret       string
+	clientRedis     *redis.Client
+	permissionsRepo repositories.PermissionsRepository
 }
 
-func NewAuthMiddleware(jwtSecret string, clientRedis *redis.Client) *AuthMiddleware {
+func NewAuthMiddleware(jwtSecret string, clientRedis *redis.Client, permissionsRepo repositories.PermissionsRepository) *AuthMiddleware {
 	return &AuthMiddleware{
-		jwtSecret:   jwtSecret,
-		clientRedis: clientRedis,
+		jwtSecret:       jwtSecret,
+		clientRedis:     clientRedis,
+		permissionsRepo: permissionsRepo,
 	}
 }
 
@@ -60,16 +63,16 @@ func (m *AuthMiddleware) PermissionRequire(permission string) fiber.Handler {
 				Message: "invalid user",
 			})
 		}
-		key := "user:permissions:" + userID.String()
-		exists, err := m.clientRedis.SIsMember(c.Context(), key, permission).Result()
+		// key := "user:permissions:" + userID.String() เดี๋ยวย้ายไป service
+		allowed, err := m.permissionsRepo.HasPermission(c.UserContext(), userID, permission)
 		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(entities.ErrorResponse{
+			return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
 				Message: "error checking permissions",
 			})
 		}
-		if !exists {
+		if !allowed {
 			return c.Status(fiber.StatusForbidden).JSON(entities.ErrorResponse{
-				Message: "ไม่มีสิทธิ์เข้าถึง",
+				Message: "permission denined",
 			})
 		}
 		return c.Next()
