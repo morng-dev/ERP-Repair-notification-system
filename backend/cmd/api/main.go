@@ -18,14 +18,18 @@ import (
 
 func main() {
 	cfg := config.LoadCongig()
+	//db
 	db := config.Setupdatabase(cfg)
+	//redis cache
 	clientRedis := config.SetupRedis(cfg)
-
+	//repo
 	userRedisRepo := redis.NewUserRedisRepo(clientRedis)
-	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis)
 	userRepo := repositories.NewUserRepository(db)
 	roleRepo := repositories.NewRoleRepository(db)
 	profesRepo := repositories.NewProfessionRepository(db)
+	permissionRepo := repositories.NewPermissionsRepository(db)
+	//middle ware
+	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis, permissionRepo)
 
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo)
 	profesService := services.NewProfessionsService(profesRepo)

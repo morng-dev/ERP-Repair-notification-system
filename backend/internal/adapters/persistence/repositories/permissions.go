@@ -11,11 +11,10 @@ import (
 )
 
 type PermissionsRepository struct {
-	db              *gorm.DB
-	permissionsRepo repositories.PermissionsRepository
+	db *gorm.DB
 }
 
-func NewPermissionsRepository(db *gorm.DB, permissionsRepo repositories.PermissionsRepository) repositories.PermissionsRepository {
+func NewPermissionsRepository(db *gorm.DB) repositories.PermissionsRepository {
 	return &PermissionsRepository{db: db}
 }
 
@@ -67,7 +66,7 @@ func (r *PermissionsRepository) GetByName(ctx context.Context, name string) (*en
 	return r.modelToEntity(&permission), nil
 }
 
-func (r *PermissionsRepository) Update(ctx context.Context, id uuid.UUID, req *entities.Permission) error {
+func (r *PermissionsRepository) Update(ctx context.Context, id uuid.UUID, req *entities.PermissionUpdate) error {
 	updated := map[string]interface{}{}
 
 	if req.Name != "" {
