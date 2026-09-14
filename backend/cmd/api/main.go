@@ -10,11 +10,18 @@ import (
 	"github.com/morng-dev/erp/internal/adapters/http/handler"
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
 	"github.com/morng-dev/erp/internal/adapters/http/routes"
+	"github.com/morng-dev/erp/internal/adapters/kafka"
 	"github.com/morng-dev/erp/internal/adapters/persistence/redis"
 	"github.com/morng-dev/erp/internal/adapters/persistence/repositories"
 	"github.com/morng-dev/erp/internal/config"
 	"github.com/morng-dev/erp/internal/core/services"
 )
+
+type kafkaHandler struct{}
+
+func (kafkaHandler) DeliverMessage(msg *kafka.Message) {
+	log.Println("ได้รับ Kafka message:", msg.Content)
+}
 
 func main() {
 	cfg := config.LoadCongig()
@@ -34,8 +41,17 @@ func main() {
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo)
 	profesService := services.NewProfessionsService(profesRepo)
 
+	messageManager, err := kafka.NewMessageManager(
+		"localhost:9092",
+		"erp-api-1",
+		kafkaHandler{},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	authHandler := handler.NewAuthHandler(authrService)
-	profesHandler := handler.NewProfessionsHandler(profesService)
+	profesHandler := handler.NewProfessionsHandler(profesService, messageManager)
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {

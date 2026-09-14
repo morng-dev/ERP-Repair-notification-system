@@ -13,4 +13,5 @@ type UserService interface {
 	// UpdateUser()
 	// DeleteUser()
 	UserUpdateProfess(ctx context.Context, userID, profesID uuid.UUID) error
+	UserUpdatePermissions(ctx context.Context, userID, permissionID uuid.UUID) error
 }

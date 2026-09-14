@@ -10,16 +10,15 @@ import (
 
 type ProfessionHandler struct {
 	professService services.ProfressionService
+	kafkaManager   *kafka.MessageManager
 }
 
-func NewProfessionsHandler(professService services.ProfressionService) *ProfessionHandler {
-	return &ProfessionHandler{professService: professService}
+func NewProfessionsHandler(professService services.ProfressionService, kafkaManager *kafka.MessageManager) *ProfessionHandler {
+	return &ProfessionHandler{professService: professService, kafkaManager: kafkaManager}
 }
 
 func (h *ProfessionHandler) CreateProfession(c *fiber.Ctx) error {
 	var req entities.Profession
-	var message *kafka.Message
-	var handler kafka.MessageHandler
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
 			Success: false,
@@ -43,7 +42,12 @@ func (h *ProfessionHandler) CreateProfession(c *fiber.Ctx) error {
 			Error:   err.Error(),
 		})
 	}
-	handler.DeliverMessage(message)
+
+	h.kafkaManager.PublicMessage(&kafka.Message{
+		FromUserId: req.Name,
+		ToUSerId:   req.Description,
+	})
+
 	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
 		Success: true,
 		Message: "created success fully",

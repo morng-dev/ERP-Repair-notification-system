@@ -101,6 +101,10 @@ func (r *UserRepository) UpdateProfession(ctx context.Context, userID, profesID 
 	return r.db.Model(models.User{}).Where("id = ?", userID).Update("profession_id", profesID).Error
 }
 
+func (r *UserRepository) AddPermission(ctx context.Context, userID, permissID uuid.UUID) error {
+	return r.db.WithContext(ctx).Exec(`INSERT INTO user_permissions(user_id,permission_id) VALUES (?,?)`, userID, permissID).Error
+}
+
 func (r *UserRepository) modelToEntity(userModel *models.User) *entities.User {
 	user := &entities.User{
 		ID:        userModel.ID,

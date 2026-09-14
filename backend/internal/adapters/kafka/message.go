@@ -102,7 +102,7 @@ func NewMessageManager(kafaAddr string, nodeID string, handler MessageHandler) (
 }
 
 func (mm *MessageManager) PublicMessage(msg *Message) error {
-	msg.MessageID = fmt.Sprintf(msg.FromUserId, msg.ToUSerId, msg.Timestamp)
+	msg.MessageID = fmt.Sprintf("%s-%s-%s", msg.FromUserId, msg.ToUSerId, msg.Timestamp)
 
 	dataByte, err := json.Marshal(msg)
 	if err != nil {

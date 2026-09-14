@@ -16,4 +16,5 @@ type UserRepository interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	GetPasswordHash(ctx context.Context, id uuid.UUID) (string, error)
 	UpdateProfession(ctx context.Context, userID, profesID uuid.UUID) error
+	AddPermission(ctx context.Context, userID, permissionID uuid.UUID) error
 }

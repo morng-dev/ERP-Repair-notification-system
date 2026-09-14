@@ -28,5 +28,4 @@ func (s *PermissionsService) CreatePermissions(ctx context.Context, req *entitie
 
 func (s *PermissionsService) UpdatePermissions(ctx context.Context, permissionID uuid.UUID, req *entities.PermissionUpdate) error {
 	return s.permissionsRepo.Update(ctx, permissionID, req)
-
 }

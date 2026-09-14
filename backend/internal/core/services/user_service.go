@@ -41,3 +41,7 @@ func (s *UserService) UserUpdateProfess(ctx context.Context, userID, professID u
 	return s.UserUpdateProfess(ctx, userID, professID)
 
 }
+
+func (s *UserService) UserUpdatePermissions(ctx context.Context, userID, professID uuid.UUID) error {
+	return s.UserUpdatePermissions(ctx, userID, professID)
+}
