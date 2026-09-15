@@ -40,18 +40,20 @@ func main() {
 
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo)
 	profesService := services.NewProfessionsService(profesRepo)
+	permissionService := services.NewPermissionsService(permissionRepo)
 
-	messageManager, err := kafka.NewMessageManager(
-		"localhost:9092",
-		"erp-api-1",
-		kafkaHandler{},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// messageManager, err := kafka.NewMessageManager(
+	// 	"localhost:9092",
+	// 	"erp-api-1",
+	// 	kafkaHandler{},
+	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	authHandler := handler.NewAuthHandler(authrService)
-	profesHandler := handler.NewProfessionsHandler(profesService, messageManager)
+	profesHandler := handler.NewProfessionsHandler(profesService)
+	permissionHandler := handler.NewPermissionHandler(permissionService)
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -71,6 +73,7 @@ func main() {
 		authMW,
 		authHandler,
 		profesHandler,
+		permissionHandler,
 	)
 	routes.SetUpRoute(app)
 

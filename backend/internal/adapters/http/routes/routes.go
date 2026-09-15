@@ -7,21 +7,24 @@ import (
 )
 
 type Routes struct {
-	authMW        *middleware.AuthMiddleware
-	authHandler   *handler.AuthHandler
-	profesHandler *handler.ProfessionHandler
+	authMW             *middleware.AuthMiddleware
+	authHandler        *handler.AuthHandler
+	profesHandler      *handler.ProfessionHandler
+	permissionsHandler *handler.PermissionHandler
 }
 
 func NewRoutes(
 	authMW *middleware.AuthMiddleware,
 	authHandler *handler.AuthHandler,
 	profesHandler *handler.ProfessionHandler,
+	permissionsHandler *handler.PermissionHandler,
 
 ) *Routes {
 	return &Routes{
-		authHandler:   authHandler,
-		authMW:        authMW,
-		profesHandler: profesHandler,
+		authHandler:        authHandler,
+		authMW:             authMW,
+		profesHandler:      profesHandler,
+		permissionsHandler: permissionsHandler,
 	}
 }
 
@@ -39,7 +42,11 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	auth := api.Group("/auth")
 	auth.Post("/register", r.authHandler.Register)
 	auth.Post("/login", r.authHandler.Login)
-
+	//profession
 	profession := app.Group("/profession", r.authMW.AuthRequire())
 	profession.Post("/", r.authMW.PermissionRequire(PermissionCreateProfession))
+	//permissions
+	permission := app.Group("/permission", r.authMW.AuthRequire())
+	permission.Post("/", r.permissionsHandler.CreatePermission)
+	permission.Put("/", r.permissionsHandler.UpdatePermission)
 }

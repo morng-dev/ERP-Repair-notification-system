@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/morng-dev/erp/internal/adapters/kafka"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/services"
 	"github.com/morng-dev/erp/pkg/utils"
@@ -10,11 +9,11 @@ import (
 
 type ProfessionHandler struct {
 	professService services.ProfressionService
-	kafkaManager   *kafka.MessageManager
+	// kafkaManager   *kafka.MessageManager
 }
 
-func NewProfessionsHandler(professService services.ProfressionService, kafkaManager *kafka.MessageManager) *ProfessionHandler {
-	return &ProfessionHandler{professService: professService, kafkaManager: kafkaManager}
+func NewProfessionsHandler(professService services.ProfressionService) *ProfessionHandler {
+	return &ProfessionHandler{professService: professService}
 }
 
 func (h *ProfessionHandler) CreateProfession(c *fiber.Ctx) error {
@@ -43,10 +42,10 @@ func (h *ProfessionHandler) CreateProfession(c *fiber.Ctx) error {
 		})
 	}
 
-	h.kafkaManager.PublicMessage(&kafka.Message{
-		FromUserId: req.Name,
-		ToUSerId:   req.Description,
-	})
+	// h.kafkaManager.PublicMessage(&kafka.Message{
+	// 	FromUserId: req.Name,
+	// 	ToUSerId:   req.Description,
+	// })
 
 	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
 		Success: true,

@@ -11,12 +11,13 @@ import (
 )
 
 type UserService struct {
-	userRepo       repositories.UserRepository
-	professionRepo repositories.ProfessionRepository
+	userRepo        repositories.UserRepository
+	professionRepo  repositories.ProfessionRepository
+	PermissionsRepo repositories.PermissionsRepository
 }
 
-func NewUserService(userRepo repositories.UserRepository) services.UserService {
-	return &UserService{userRepo: userRepo}
+func NewUserService(userRepo repositories.UserRepository, PermissionsRepo repositories.PermissionsRepository, professionRepo repositories.ProfessionRepository) services.UserService {
+	return &UserService{userRepo: userRepo, PermissionsRepo: PermissionsRepo, professionRepo: professionRepo}
 }
 
 func (s *UserService) GetUserAll(ctx context.Context, page, limit int) ([]*entities.User, *entities.PaginationResponse, error) {
@@ -42,6 +43,10 @@ func (s *UserService) UserUpdateProfess(ctx context.Context, userID, professID u
 
 }
 
-func (s *UserService) UserUpdatePermissions(ctx context.Context, userID, professID uuid.UUID) error {
-	return s.UserUpdatePermissions(ctx, userID, professID)
+func (s *UserService) UserUpdatePermissions(ctx context.Context, userID, permissID uuid.UUID) error {
+	_, err := s.PermissionsRepo.GetByID(ctx, permissID)
+	if err != nil {
+		return err
+	}
+	return s.UserUpdatePermissions(ctx, userID, permissID)
 }
