@@ -29,10 +29,10 @@ func NewRoutes(
 }
 
 const (
-	PermissionCreateProfession = "create_profession"
-	PermissionReadProfession   = "read_profession"
-	PermissionUpdateProfession = "update_profession"
-	PermissionDeleteProfession = "delete_profession"
+	PermissionCreateProfession = "profession:create"
+	PermissionReadProfession   = "profession:read"
+	PermissionUpdateProfession = "profession:update"
+	PermissionDeleteProfession = "profession:delete"
 )
 
 func (r *Routes) SetUpRoute(app *fiber.App) {

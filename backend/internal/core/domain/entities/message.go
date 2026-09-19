@@ -18,6 +18,14 @@ type Message struct {
 	TimeStamp  int64     `json:"timestamp"`
 }
 
+type MessageKafka struct {
+	FromUserId string `json:"form_user_id"`
+	ToUSerId   string `json:"to_user_id"`
+	Content    string `json:"content"`
+	Timestamp  string `json:"timestamp"`
+	MessageID  string `json:"message_id,omitempty"`
+}
+
 type Chanal struct {
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`

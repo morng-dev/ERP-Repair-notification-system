@@ -8,16 +8,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/morng-dev/erp/internal/core/domain/entities"
+	kafkaservice "github.com/morng-dev/erp/internal/core/domain/ports/kafkaService"
 	"github.com/segmentio/kafka-go"
 )
-
-type Message struct {
-	FromUserId string `json:"form_user_id"`
-	ToUSerId   string `json:"to_user_id"`
-	Content    string `json:"content"`
-	Timestamp  string `json:"timestamp"`
-	MessageID  string `json:"message_id,omitempty"`
-}
 
 type MessageCache struct {
 	messages map[string]int64
@@ -57,20 +51,16 @@ func (mc *MessageCache) Add(messageID string) bool {
 	return true
 }
 
-type MessageHandler interface {
-	DeliverMessage(msg *Message)
-}
-
 type MessageManager struct {
 	kafkaWrtier   *kafka.Writer
 	messageReader *kafka.Reader
 	MessageCaChe  *MessageCache
-	handler       MessageHandler
+	handler       kafkaservice.MessageHandler
 	ctx           context.Context
 	cancel        context.CancelFunc
 }
 
-func NewMessageManager(kafaAddr string, nodeID string, handler MessageHandler) (*MessageManager, error) {
+func NewMessageManager(kafaAddr string, nodeID string, handler kafkaservice.MessageHandler) (*MessageManager, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	writer := &kafka.Writer{
 		Addr:         kafka.TCP(kafaAddr),
@@ -101,7 +91,7 @@ func NewMessageManager(kafaAddr string, nodeID string, handler MessageHandler) (
 	return mm, nil
 }
 
-func (mm *MessageManager) PublicMessage(msg *Message) error {
+func (mm *MessageManager) PublicMessage(msg *entities.MessageKafka) error {
 	msg.MessageID = fmt.Sprintf("%s-%s-%s", msg.FromUserId, msg.ToUSerId, msg.Timestamp)
 
 	dataByte, err := json.Marshal(msg)
@@ -151,7 +141,7 @@ func (mm *MessageManager) listenToMessage() {
 			continue
 		}
 		if event.Type == "message" {
-			var chatMsg Message
+			var chatMsg entities.MessageKafka
 			if err := json.Unmarshal(event.Data, &chatMsg); err != nil {
 				log.Printf("Error unmarshaling message : %v", err)
 				continue

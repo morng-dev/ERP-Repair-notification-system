@@ -10,18 +10,11 @@ import (
 	"github.com/morng-dev/erp/internal/adapters/http/handler"
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
 	"github.com/morng-dev/erp/internal/adapters/http/routes"
-	"github.com/morng-dev/erp/internal/adapters/kafka"
 	"github.com/morng-dev/erp/internal/adapters/persistence/redis"
 	"github.com/morng-dev/erp/internal/adapters/persistence/repositories"
 	"github.com/morng-dev/erp/internal/config"
 	"github.com/morng-dev/erp/internal/core/services"
 )
-
-type kafkaHandler struct{}
-
-func (kafkaHandler) DeliverMessage(msg *kafka.Message) {
-	log.Println("ได้รับ Kafka message:", msg.Content)
-}
 
 func main() {
 	cfg := config.LoadCongig()
