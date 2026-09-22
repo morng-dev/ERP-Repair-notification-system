@@ -35,6 +35,9 @@ func LoadCongig() *Config {
 		log.Printf("Warning: .env file not found, relying on environment variables")
 	}
 	db, err := strconv.Atoi(os.Getenv("REDIS_DB"))
+	if err != nil {
+		log.Printf("Warning: REDIS_DB found, relying on environment variables")
+	}
 	config := &Config{
 		APPENV:    os.Getenv("APP_ENV"),
 		APPPORT:   os.Getenv("APP_PORT"),

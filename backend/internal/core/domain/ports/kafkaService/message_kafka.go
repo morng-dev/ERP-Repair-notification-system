@@ -1,4 +1,4 @@
-package kafka
+package kafkaservice
 
 import "github.com/morng-dev/erp/internal/core/domain/entities"
 

@@ -88,6 +88,14 @@ func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Delete(&models.User{}, "id = ?", id).Error
 }
 
+func (r *UserRepository) UpdatePassword(ctx context.Context, userID uuid.UUID, hashPassword string) error {
+	return r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).Update("password", hashPassword).Error
+}
+
+func (r *UserRepository) SetRefreshToken(ctx context.Context, userID uuid.UUID, token string) error {
+	return r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).Update("refresh_token", token).Error
+}
+
 func (r *UserRepository) GetPasswordHash(ctx context.Context, id uuid.UUID) (string, error) {
 	var user models.User
 

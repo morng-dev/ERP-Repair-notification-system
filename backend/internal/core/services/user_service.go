@@ -27,7 +27,7 @@ func (s *UserService) GetUserAll(ctx context.Context, page, limit int) ([]*entit
 	}
 	totalpages := int(math.Ceil(float64(total) / float64(limit)))
 	pagination := &entities.PaginationResponse{
-		Page:       total,
+		Page:       page,
 		Limit:      limit,
 		TotalPages: totalpages,
 		TotalItems: total,
@@ -39,7 +39,7 @@ func (s *UserService) UserUpdateProfess(ctx context.Context, userID, professID u
 	if _, err := s.professionRepo.GetByID(ctx, professID); err != nil {
 		return err
 	}
-	return s.UserUpdateProfess(ctx, userID, professID)
+	return s.userRepo.UpdateProfession(ctx, userID, professID)
 
 }
 
