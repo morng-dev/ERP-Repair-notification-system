@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/adapters/persistence/models"
@@ -71,6 +72,16 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*entitie
 	}
 	return r.modelToEntity(&user), nil
 }
+
+func (r *UserRepository) GetEmailExists(ctx context.Context, email string) (bool, error) {
+	var exists bool
+	err := r.db.WithContext(ctx).Raw(`SELECT EXISTS(SELECT 1) FROM users WHERE email = ?`, email).Scan(&exists).Error
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
+
 func (r *UserRepository) Update(ctx context.Context, id uuid.UUID, req *entities.UpdateUser) error {
 	updates := map[string]interface{}{}
 	if req.FirstName != "" {
@@ -95,6 +106,32 @@ func (r *UserRepository) UpdatePassword(ctx context.Context, userID uuid.UUID, h
 func (r *UserRepository) SetRefreshToken(ctx context.Context, userID uuid.UUID, token string) error {
 	return r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).Update("refresh_token", token).Error
 }
+func (r *UserRepository) GetByRefreshToken(ctx context.Context, token string) (*entities.User, error) {
+	var userModel models.User
+	if err := r.db.WithContext(ctx).First(&userModel, "refresh_token = ?", token).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("refresh token invalid")
+		}
+		return nil, err
+	}
+	return r.modelToEntity(&userModel), nil
+}
+
+func (r *UserRepository) SetResetToken(ctx context.Context, email, resetToken string) error {
+	expiry := time.Now().Add(15 * time.Minute)
+	return r.db.WithContext(ctx).Model(&models.User{}).Where("email = ?", email).Updates(map[string]interface{}{
+		"reset_token":        resetToken,
+		"reset_token_expiry": expiry,
+	}).Error
+
+}
+func (r UserRepository) GetByResetToken(ctx context.Context, token string) (*entities.User, error) {
+	var userModel models.User
+	if err := r.db.WithContext(ctx).Where("reset_token = ? AND reset_token_expiry > ?", token, time.Now()).First(userModel).Error; err != nil {
+		return nil, err
+	}
+	return r.modelToEntity(&userModel), nil
+}
 
 func (r *UserRepository) GetPasswordHash(ctx context.Context, id uuid.UUID) (string, error) {
 	var user models.User
@@ -103,6 +140,13 @@ func (r *UserRepository) GetPasswordHash(ctx context.Context, id uuid.UUID) (str
 		return "", err
 	}
 	return user.Password, nil
+}
+
+func (r *UserRepository) ClearResetToken(ctx context.Context, userID uuid.UUID) error {
+	return r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
+		"reset_token":        "",
+		"reset_token_expiry": nil,
+	}).Error
 }
 
 func (r *UserRepository) UpdateProfession(ctx context.Context, userID, profesID uuid.UUID) error {
