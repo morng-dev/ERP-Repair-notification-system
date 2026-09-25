@@ -42,6 +42,9 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	auth := api.Group("/auth")
 	auth.Post("/register", r.authHandler.Register)
 	auth.Post("/login", r.authHandler.Login)
+	auth.Post("/forget-password", r.authHandler.ForgotPassword)
+	auth.Post("/reset-password", r.authHandler.ResetPassword)
+	auth.Post("/change-password", r.authMW.AuthRequire(), r.authHandler.Changepassword)
 	//profession
 	profession := app.Group("/profession", r.authMW.AuthRequire())
 	profession.Post("/", r.authMW.PermissionRequire(PermissionCreateProfession))

@@ -27,6 +27,12 @@ type Config struct {
 
 	JWTSecret    string
 	JWTExpiresIn string
+
+	SMTP_HOST     string
+	SMTP_PORT     int
+	SMTP_USERNAME string
+	SMTP_PASSWORD string
+	SMTP_FROM     string
 }
 
 func LoadCongig() *Config {
@@ -37,6 +43,10 @@ func LoadCongig() *Config {
 	db, err := strconv.Atoi(os.Getenv("REDIS_DB"))
 	if err != nil {
 		log.Printf("Warning: REDIS_DB found, relying on environment variables")
+	}
+	smtpPort, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
+	if err != nil {
+		log.Printf("Warning: SMTP_PORT found, relying on environment variables")
 	}
 	config := &Config{
 		APPENV:    os.Getenv("APP_ENV"),
@@ -56,6 +66,12 @@ func LoadCongig() *Config {
 
 		JWTSecret:    os.Getenv("JWT_SECRET"),
 		JWTExpiresIn: os.Getenv("JWT_EXPIRES_IN"),
+
+		SMTP_HOST:     os.Getenv("SMTP_HOST"),
+		SMTP_PORT:     smtpPort,
+		SMTP_USERNAME: os.Getenv("SMTP_USERNAME"),
+		SMTP_PASSWORD: os.Getenv("SMTP_PASSWORD"),
+		SMTP_FROM:     os.Getenv("SMTP_FROM"),
 	}
 	return config
 }

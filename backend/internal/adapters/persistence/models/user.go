@@ -16,8 +16,8 @@ type User struct {
 	Address          string      `gorm:"type:text" json:"address"`
 	Active           bool        `gorm:"default:true" json:"active"`
 	RoleID           uuid.UUID   `json:"role_id" validate:"required"`
-	Role             Role        `gorm:"foreignKey:RoleID" json:"role,omitempty"`
-	ProfessionID     *uuid.UUID  `gorm:"type:uuid;index;constraint:OnDelete:SET NULL" json:"profession_id"`
+	Role             *Role       `gorm:"foreignKey:RoleID" json:"role,omitempty"`
+	ProfessionID     uuid.UUID   `gorm:"type:uuid;index;constraint:OnDelete:SET NULL" json:"profession_id"`
 	Profession       *Profession `gorm:"foreignKey:ProfessionID" json:"profession,omitempty"`
 	RefreshToken     string      `gorm:"type:text" json:"-"`
 	ResetToken       string      `gorm:"type:text" json:"-"`

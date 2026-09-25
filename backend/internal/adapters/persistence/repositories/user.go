@@ -20,7 +20,7 @@ func NewUserRepository(db *gorm.DB) repositories.UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) Create(ctx context.Context, user *entities.User, password string) (*entities.User, error) {
+func (r *UserRepository) Create(ctx context.Context, user *entities.User, password string) error {
 	userModel := &models.User{
 		Email:     user.Email,
 		Password:  password,
@@ -32,10 +32,10 @@ func (r *UserRepository) Create(ctx context.Context, user *entities.User, passwo
 	}
 
 	if err := r.db.WithContext(ctx).Create(userModel).Error; err != nil {
-		return nil, err
+		return err
 	}
+	return nil
 
-	return r.modelToEntity(userModel), nil
 }
 
 func (r *UserRepository) GetAll(ctx context.Context, page, limit int) ([]*entities.User, int, error) {
@@ -127,7 +127,7 @@ func (r *UserRepository) SetResetToken(ctx context.Context, email, resetToken st
 }
 func (r UserRepository) GetByResetToken(ctx context.Context, token string) (*entities.User, error) {
 	var userModel models.User
-	if err := r.db.WithContext(ctx).Where("reset_token = ? AND reset_token_expiry > ?", token, time.Now()).First(userModel).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("reset_token = ? AND reset_token_expiry > ?", token, time.Now()).Preload("Role").First(&userModel).Error; err != nil {
 		return nil, err
 	}
 	return r.modelToEntity(&userModel), nil
@@ -169,9 +169,9 @@ func (r *UserRepository) modelToEntity(userModel *models.User) *entities.User {
 		CreatedAt: userModel.CreatedAt,
 		UpdatedAt: userModel.UpdatedAt,
 	}
-	if userModel.RoleID != uuid.Nil {
+	if userModel.RoleID != uuid.Nil && userModel.Role != nil {
 		user.Role = &entities.Role{
-			ID:          userModel.RoleID,
+			ID:          userModel.Role.ID,
 			Name:        userModel.Role.Name,
 			Description: userModel.Role.Description,
 			CreatedAt:   userModel.Role.CreatedAt,

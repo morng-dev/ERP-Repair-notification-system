@@ -2,8 +2,6 @@ package services
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"math"
 
 	"github.com/google/uuid"
@@ -51,24 +49,4 @@ func (s *UserService) UserUpdatePermissions(ctx context.Context, userID, permiss
 		return err
 	}
 	return s.UserUpdatePermissions(ctx, userID, permissID)
-}
-
-func (s *UserService) GenerrateRefreshToken() (string, error) {
-	byte := make([]byte, 32)
-	_, err := rand.Read(byte)
-	if err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(byte), nil
-}
-
-func (s *UserService) GenerrateResetToken() (string, error) {
-	byte := make([]byte, 16)
-
-	_, err := rand.Read(byte)
-	if err != nil {
-		return "", err
-	}
-
-	return hex.EncodeToString(byte), nil
 }

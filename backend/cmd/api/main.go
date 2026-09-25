@@ -10,6 +10,7 @@ import (
 	"github.com/morng-dev/erp/internal/adapters/http/handler"
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
 	"github.com/morng-dev/erp/internal/adapters/http/routes"
+	mail "github.com/morng-dev/erp/internal/adapters/mailer"
 	"github.com/morng-dev/erp/internal/adapters/persistence/redis"
 	"github.com/morng-dev/erp/internal/adapters/persistence/repositories"
 	"github.com/morng-dev/erp/internal/config"
@@ -22,6 +23,8 @@ func main() {
 	db := config.Setupdatabase(cfg)
 	//redis cache
 	clientRedis := config.SetupRedis(cfg)
+	//SmtpMail
+	mailer := mail.NewSmtpMailer(cfg.SMTP_HOST, cfg.SMTP_USERNAME, cfg.SMTP_PASSWORD, cfg.SMTP_FROM, cfg.APPURL, cfg.SMTP_PORT)
 	//repo
 	userRedisRepo := redis.NewUserRedisRepo(clientRedis)
 	userRepo := repositories.NewUserRepository(db)
@@ -31,7 +34,7 @@ func main() {
 	//middle ware
 	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis, permissionRepo)
 
-	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo)
+	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
 	profesService := services.NewProfessionsService(profesRepo)
 	permissionService := services.NewPermissionsService(permissionRepo)
 

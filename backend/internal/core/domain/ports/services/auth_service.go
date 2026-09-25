@@ -12,4 +12,6 @@ type AuthService interface {
 	Login(ctx context.Context, req *entities.LoginRequest) (*entities.LoginResponse, error)
 	ChangePassword(ctx context.Context, userID uuid.UUID, req *entities.ChangePasswordRequest) error
 	RefreshToken(ctx context.Context, req *entities.RefreshTokenRequest) (*entities.LoginResponse, error)
+	ForgotPassword(ctx context.Context, req *entities.ForgotPasswordRequest) error
+	ResetPassword(ctx context.Context, req *entities.ResetPasswordRequest) error
 }
