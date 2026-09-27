@@ -12,6 +12,7 @@ import (
 
 type UserService struct {
 	userRepo        repositories.UserRepository
+	roleRepo        repositories.RoleRepository
 	professionRepo  repositories.ProfessionRepository
 	PermissionsRepo repositories.PermissionsRepository
 }
@@ -36,17 +37,14 @@ func (s *UserService) GetUserAll(ctx context.Context, page, limit int) ([]*entit
 }
 
 func (s *UserService) UserUpdateProfess(ctx context.Context, userID, professID uuid.UUID) error {
-	if _, err := s.professionRepo.GetByID(ctx, professID); err != nil {
-		return err
-	}
 	return s.userRepo.UpdateProfession(ctx, userID, professID)
 
 }
 
 func (s *UserService) UserUpdatePermissions(ctx context.Context, userID, permissID uuid.UUID) error {
-	_, err := s.PermissionsRepo.GetByID(ctx, permissID)
-	if err != nil {
-		return err
-	}
-	return s.UserUpdatePermissions(ctx, userID, permissID)
+	return s.userRepo.AddPermission(ctx, userID, permissID)
+}
+
+func (s *UserService) UserAddRole(ctx context.Context, userID, roleID uuid.UUID) error {
+	return s.userRepo.AddRole(ctx, userID, roleID)
 }

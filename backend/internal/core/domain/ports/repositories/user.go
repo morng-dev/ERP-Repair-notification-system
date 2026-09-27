@@ -16,6 +16,7 @@ type UserRepository interface {
 	Update(ctx context.Context, id uuid.UUID, req *entities.UpdateUser) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	GetPasswordHash(ctx context.Context, id uuid.UUID) (string, error)
+	AddRole(ctx context.Context, userID, roleID uuid.UUID) error
 	UpdatePassword(ctx context.Context, userID uuid.UUID, newPasswordhash string) error
 	SetRefreshToken(ctx context.Context, userID uuid.UUID, token string) error
 	GetByRefreshToken(ctx context.Context, token string) (*entities.User, error)

@@ -32,3 +32,8 @@ type PermissionUpdate struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
+
+type CreateRoleRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
