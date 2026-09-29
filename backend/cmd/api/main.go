@@ -2,6 +2,10 @@ package main
 
 import (
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -10,7 +14,9 @@ import (
 	"github.com/morng-dev/erp/internal/adapters/http/handler"
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
 	"github.com/morng-dev/erp/internal/adapters/http/routes"
+	"github.com/morng-dev/erp/internal/adapters/kafka"
 	mail "github.com/morng-dev/erp/internal/adapters/mailer"
+	"github.com/morng-dev/erp/internal/adapters/persistence/kafkarepo"
 	"github.com/morng-dev/erp/internal/adapters/persistence/redis"
 	"github.com/morng-dev/erp/internal/adapters/persistence/repositories"
 	"github.com/morng-dev/erp/internal/config"
@@ -25,15 +31,20 @@ func main() {
 	clientRedis := config.SetupRedis(cfg)
 	//SmtpMail
 	mailer := mail.NewSmtpMailer(cfg.SMTP_HOST, cfg.SMTP_USERNAME, cfg.SMTP_PASSWORD, cfg.SMTP_FROM, cfg.APPURL, cfg.SMTP_PORT)
-	//repo
+	//redis cache
 	userRedisRepo := redis.NewUserRedisRepo(clientRedis)
+	//repo
 	userRepo := repositories.NewUserRepository(db)
 	roleRepo := repositories.NewRoleRepository(db)
 	profesRepo := repositories.NewProfessionRepository(db)
 	permissionRepo := repositories.NewPermissionsRepository(db)
+	//kafkaRepo
+	NotificationHandler := kafkarepo.NewnotificationsRepository(db)
+	//queue
+	nm, _ := kafka.NewNotificationManager("localhost:9092", "node1", NotificationHandler) //test
 	//middle ware
 	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis, permissionRepo)
-
+	//serivce
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
 	profesService := services.NewProfessionsService(profesRepo)
 	permissionService := services.NewPermissionsService(permissionRepo)
@@ -72,7 +83,19 @@ func main() {
 		permissionHandler,
 	)
 	routes.SetUpRoute(app)
+	//run kafkaMessage
+	go nm.ListenToNotification()
 
+	sigchan := make(chan os.Signal, 1)
+	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigchan
+		log.Println("shutting down graacfully...")
+		nm.Close()
+		app.ShutdownWithTimeout(15 * time.Second)
+	}()
+
+	//start server
 	log.Printf("Server starting on port %s", cfg.APPPORT)
 	log.Fatal(app.Listen(":" + cfg.APPPORT))
 }

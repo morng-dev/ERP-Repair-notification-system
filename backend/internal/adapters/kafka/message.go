@@ -151,7 +151,7 @@ func (mm *MessageManager) listenToMessage() {
 				continue
 			}
 			log.Printf("pocess new message from: %s to %s", chatMsg.FromUserId, chatMsg.ToUSerId)
-			mm.handler.DeliverMessage(&chatMsg)
+			mm.handler.DeliverMessage(context.Background(), &chatMsg)
 		}
 	}
 }

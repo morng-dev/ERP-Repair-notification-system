@@ -155,7 +155,7 @@ func (r *UserRepository) ClearResetToken(ctx context.Context, userID uuid.UUID) 
 }
 
 func (r *UserRepository) UpdateProfession(ctx context.Context, userID, profesID uuid.UUID) error {
-	return r.db.Model(models.User{}).Where("id = ?", userID).Update("profession_id", profesID).Error
+	return r.db.WithContext(ctx).Model(models.User{}).Where("id = ?", userID).Update("profession_id", profesID).Error
 }
 
 func (r *UserRepository) AddPermission(ctx context.Context, userID, permissID uuid.UUID) error {

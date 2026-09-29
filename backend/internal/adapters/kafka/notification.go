@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
@@ -46,6 +47,7 @@ func NewNotificationManager(kafkaAddr string, nodeID string, handler kafkaservic
 		cancel:       cancel,
 	}
 	log.Println("Notification Manager Initialized")
+	go nm.ListenToNotification()
 	return nm, nil
 }
 
@@ -67,15 +69,16 @@ func (nm *NotificationManager) PublicNotification(notif *entities.Notification) 
 	if err != nil {
 		return err
 	}
+	key := fmt.Sprintf("%s-%s", notif.UserID.String(), notif.Type)
 	msg := kafka.Message{
 		Topic: "notifications-topic",
-		Key:   []byte(notif.UserID.String()),
+		Key:   []byte(key),
 		Value: eventByte,
 	}
 	return nm.kafkaWriter.WriteMessages(ctx, msg)
 }
 
-func (nm *NotificationManager) listenToNotification() {
+func (nm *NotificationManager) ListenToNotification() {
 	for {
 		select {
 		case <-nm.ctx.Done():
