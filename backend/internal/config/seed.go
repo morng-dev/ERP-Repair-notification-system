@@ -51,35 +51,35 @@ func seedRoles(db *gorm.DB) error {
 func seedPermission(db *gorm.DB) error {
 	permissions := []models.Permission{
 		{
-			Name:        "view_users",
+			Name:        "user:view",
 			Description: "see all user",
 		},
 		{
-			Name:        "create_users",
+			Name:        "user:create",
 			Description: "create users",
 		},
 		{
-			Name:        "edit_users",
+			Name:        "user:update",
 			Description: "edit users",
 		},
 		{
-			Name:        "delete_users",
+			Name:        "user:delete",
 			Description: "delete user!!!",
 		},
 		{
-			Name:        "view_roles",
+			Name:        "role:view",
 			Description: "view all roles",
 		},
 		{
-			Name:        "create_roles",
+			Name:        "role:create",
 			Description: "create roles",
 		},
 		{
-			Name:        "edit_roles",
+			Name:        "role:update",
 			Description: "update roles user",
 		},
 		{
-			Name:        "delete_role",
+			Name:        "role:delete",
 			Description: "delete role !!!!",
 		},
 	}

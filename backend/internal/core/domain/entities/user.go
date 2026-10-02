@@ -13,7 +13,7 @@ type User struct {
 	Lastname     string      `json:"last_name"`
 	Avatar       string      `json:"avatar"`
 	Active       bool        `json:"active"`
-	ProfessionID uuid.UUID   `json:"profession_id"`
+	ProfessionID *uuid.UUID  `json:"profession_id"`
 	Profession   *Profession `json:"profession,omitempty"`
 	RoleID       uuid.UUID   `json:"role_id"`
 	Role         *Role       `json:"role,omitempty"`

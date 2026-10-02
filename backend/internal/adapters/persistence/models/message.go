@@ -7,7 +7,7 @@ import (
 )
 
 type Message struct {
-	ID       uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ID       uuid.UUID `gorm:"type:uuid" json:"id"`
 	SenderID uuid.UUID `json:"sender_id"`
 	Sender   User      `gorm:"foreignKey:SenderID;references:ID" json:"sender"`
 
@@ -22,7 +22,7 @@ type Message struct {
 }
 
 type Chanal struct {
-	ID          uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	ID          uuid.UUID `gorm:"type:uuid" json:"id"`
 	Name        string    `gorm:"type:varchar(100)" json:"name"`
 	Description string    `gorm:"type:text" json:"description"`
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`

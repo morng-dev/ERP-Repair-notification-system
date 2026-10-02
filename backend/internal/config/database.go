@@ -17,8 +17,8 @@ func Setupdatabase(config *Config) *gorm.DB {
 	if err != nil {
 		log.Fatalf("failed to connect database:%s", err)
 	}
-	SeedDatabase(db)
 	runAutoMigrate(db)
+	SeedDatabase(db)
 
 	return db
 }

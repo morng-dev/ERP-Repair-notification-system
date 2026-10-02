@@ -49,8 +49,12 @@ func (s *AuthService) Register(ctx context.Context, req *entities.RegisterReques
 	if err != nil {
 		return nil, err
 	}
-
+	id, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
 	user := &entities.User{
+		ID:       id,
 		Email:    req.Email,
 		Firsname: req.Firsname,
 		Lastname: req.Lastname,

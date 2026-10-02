@@ -22,6 +22,7 @@ func NewUserRepository(db *gorm.DB) repositories.UserRepository {
 
 func (r *UserRepository) Create(ctx context.Context, user *entities.User, password string) error {
 	userModel := &models.User{
+		ID:        user.ID,
 		Email:     user.Email,
 		Password:  password,
 		FirstName: user.Firsname,

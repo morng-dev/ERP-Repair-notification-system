@@ -1,7 +1,11 @@
 package kafkaservice
 
-import "github.com/morng-dev/erp/internal/core/domain/entities"
+import (
+	"context"
+
+	"github.com/morng-dev/erp/internal/core/domain/entities"
+)
 
 type NotificationHandler interface {
-	DeliverNotification(notif *entities.Notification)
+	DeliverNotification(ctx context.Context, notif *entities.Notification) error
 }

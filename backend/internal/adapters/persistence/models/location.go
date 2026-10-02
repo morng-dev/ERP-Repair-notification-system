@@ -8,7 +8,7 @@ import (
 )
 
 type Location struct {
-	ID          uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	ID          uuid.UUID      `gorm:"type:uuid;primary_key" json:"id"`
 	Description string         `json:"description"`
 	Address     string         `json:"address"`
 	City        string         `json:"city"`

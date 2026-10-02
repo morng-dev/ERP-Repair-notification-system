@@ -7,7 +7,7 @@ import (
 )
 
 type Category struct {
-	ID          uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	ID          uuid.UUID `gorm:"type:uuid" json:"id"`
 	Name        string    `gorm:"type:varchar(100)" json:"name"`
 	Description string    `gorm:"type:varchar(100)" json:"description"`
 	Image       string    `gorm:"type:varchar(100)" json:"image"`

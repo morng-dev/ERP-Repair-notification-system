@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -51,7 +52,7 @@ func NewNotificationManager(kafkaAddr string, nodeID string, handler kafkaservic
 	return nm, nil
 }
 
-func (nm *NotificationManager) PublicNotification(notif *entities.Notification) error {
+func (nm *NotificationManager) PublishNotification(notif *entities.Notification) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	notif.CreatedAt = time.Now().UTC()
@@ -87,10 +88,11 @@ func (nm *NotificationManager) ListenToNotification() {
 		}
 		msg, err := nm.NotifReader.ReadMessage(nm.ctx)
 		if err != nil {
-			if err == nm.NotifReader.Close() {
+			if errors.Is(err, context.Canceled) {
 				return
 			}
 			log.Printf("kafka Read error: %v", err)
+			time.Sleep(time.Second)
 			continue
 		}
 		var event Event
@@ -104,7 +106,10 @@ func (nm *NotificationManager) ListenToNotification() {
 				log.Printf("Error unmarshaling notifications : %v", err)
 				continue
 			}
-			nm.NotifHandler.DeliverNotification(&notif)
+			if err := nm.NotifHandler.DeliverNotification(nm.ctx, &notif); err != nil {
+				log.Printf("failed to deliver notification: %v", err)
+				continue
+			}
 		}
 
 	}

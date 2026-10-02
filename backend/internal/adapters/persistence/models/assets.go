@@ -7,7 +7,7 @@ import (
 )
 
 type Assets struct {
-	ID         uuid.UUID     `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	ID         uuid.UUID     `gorm:"type:uuid;primary_key" json:"id"`
 	Name       string        `gorm:"type:varchar(255)" json:"name" validate:"required"`
 	CategoryID uuid.UUID     `json:"category_id" validate:"required"`
 	Category   Category      `gorm:"foreignKey:CategoryID" json:"category,omitempty"`
@@ -22,7 +22,7 @@ type Assets struct {
 }
 
 type ImageAssets struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	ID        uuid.UUID `gorm:"type:uuid;primary_key" json:"id"`
 	AssetsID  uuid.UUID `gorm:"type:uuid" json:"assets_id" validate:"required"`
 	ImageURL  string    `gorm:"type:varchar(255)" json:"image_url"`
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`

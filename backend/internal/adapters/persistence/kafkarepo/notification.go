@@ -18,16 +18,18 @@ func NewnotificationsRepository(db *gorm.DB) kafkaservice.NotificationHandler {
 	return &notificationsRepository{db: db}
 }
 
-func (k *notificationsRepository) DeliverNotification(msg *entities.Notification) {
+func (k *notificationsRepository) DeliverNotification(ctx context.Context, msg *entities.Notification) error {
 	notif := models.Notification{
+		ID:      msg.ID,
 		UserID:  msg.UserID,
 		Message: msg.Content,
 		Type:    msg.Type,
 		Status:  msg.Status,
 	}
-	if err := k.db.WithContext(context.Background()).Create(&notif).Error; err != nil {
+	if err := k.db.WithContext(ctx).Model(&models.Notification{}).Create(&notif).Error; err != nil {
 		log.Printf("Failed to save notification: %v", err)
 	} else {
 		log.Printf("Notification saved for user %s", msg.UserID)
 	}
+	return nil
 }

@@ -19,11 +19,23 @@ func NewPermissionsService(permissionsRepo repositories.PermissionsRepository) s
 }
 
 func (s *PermissionsService) CreatePermissions(ctx context.Context, req *entities.Permission) error {
-	_, exist := s.permissionsRepo.GetByName(ctx, req.Name)
+	id, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
+	permissions := &entities.Permission{
+		ID:          id,
+		Name:        req.Name,
+		Description: req.Description,
+	}
+	_, exist := s.permissionsRepo.GetByName(ctx, permissions.Name)
 	if exist == nil {
 		return errors.New("permission alredy exist")
 	}
-	return s.permissionsRepo.Create(ctx, req)
+	if err := s.permissionsRepo.Create(ctx, permissions); err != nil {
+		return errors.New("ไม่สามารถสร้างรายการได้")
+	}
+	return nil
 }
 
 func (s *PermissionsService) UpdatePermissions(ctx context.Context, permissionID uuid.UUID, req *entities.PermissionUpdate) error {
