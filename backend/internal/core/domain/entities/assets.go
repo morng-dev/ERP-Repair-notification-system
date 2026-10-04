@@ -30,7 +30,6 @@ type ImageAssets struct {
 }
 
 type CreateAssetRequest struct {
-	ID         uuid.UUID `json:"id"`
 	Name       string    `json:"name" validate:"required"`
 	CategoryID uuid.UUID `json:"category_id" validate:"required"`
 	LocationID uuid.UUID `json:"location_id" validate:"required"`

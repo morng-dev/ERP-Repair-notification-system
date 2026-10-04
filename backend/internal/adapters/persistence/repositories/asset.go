@@ -19,7 +19,7 @@ func NewAssetsRepositories(db *gorm.DB) repositories.AssetsRepositories {
 	return &assetsRepositories{db: db}
 }
 
-func (r *assetsRepositories) Create(ctx context.Context, asset *entities.CreateAssetRequest) error {
+func (r *assetsRepositories) Create(ctx context.Context, asset *entities.Asset) error {
 	assetModel := &models.Assets{
 		ID:         asset.ID,
 		Name:       asset.Name,
@@ -39,10 +39,10 @@ func (r *assetsRepositories) Create(ctx context.Context, asset *entities.CreateA
 		return err
 	}
 
-	for _, imageURL := range asset.Images {
+	for _, image := range asset.Images {
 		assetImages := &models.ImageAssets{
 			AssetsID: assetModel.ID,
-			ImageURL: imageURL,
+			ImageURL: image.ImageURL,
 		}
 		if err := tx.Create(assetImages).Error; err != nil {
 			tx.Rollback()

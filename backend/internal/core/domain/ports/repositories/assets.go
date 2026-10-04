@@ -8,6 +8,6 @@ import (
 )
 
 type AssetsRepositories interface {
-	Create(ctx context.Context, assets *entities.CreateAssetRequest) error
+	Create(ctx context.Context, assets *entities.Asset) error
 	GetByID(ctx context.Context, assetID uuid.UUID) (*entities.Asset, error)
 }
