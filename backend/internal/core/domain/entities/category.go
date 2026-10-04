@@ -1,12 +1,16 @@
 package entities
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Category struct {
 	ID          uuid.UUID `json:"id"`
-	Name        uuid.UUID `json:"name"`
+	Name        string    `json:"name"`
 	Description string    `json:"Description"`
 	Image       string    `json:"image"`
-	CreatedAt   string    `json:"created_at"`
-	UpdatedAt   string    `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }

@@ -21,7 +21,7 @@ type User struct {
 	Profession       *Profession  `gorm:"foreignKey:ProfessionID" json:"profession,omitempty"`
 	RefreshToken     string       `gorm:"type:text" json:"-"`
 	ResetToken       string       `gorm:"type:text" json:"-"`
-	ResetTokenExpiry time.Time    `json:"-"`
+	ResetTokenExpiry *time.Time   `json:"-"`
 	CreatedAt        time.Time    `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt        time.Time    `gorm:"autoUpdateTime" json:"updated_at"`
 	Assets           []Assets     `gorm:"foreignKey:OwnerID" json:"assets,omitempty"`

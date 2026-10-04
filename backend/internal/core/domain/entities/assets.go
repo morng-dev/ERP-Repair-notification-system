@@ -6,17 +6,19 @@ import (
 	"github.com/google/uuid"
 )
 
-type Assets struct {
-	ID        uuid.UUID     `json:"id"`
-	Name      string        `json:"name"`
-	Category  *Category     `json:"category"`
-	Location  *Location     `json:"location"`
-	OwnerID   uuid.UUID     `json:"owner_id"`
-	Owner     *User         `json:"owner"`
-	Image     string        `json:"image"`
-	Images    []ImageAssets `json:"images,omitempty"`
-	CreatedAt time.Time     `json:"created_at"`
-	UpdatedAt time.Time     `json:"updated_at"`
+type Asset struct {
+	ID         uuid.UUID     `json:"id"`
+	Name       string        `json:"name"`
+	CategoryID uuid.UUID     `json:"category_id"`
+	Category   *Category     `json:"category,omitempty"`
+	LocationID uuid.UUID     `json:"location_id"`
+	Location   *Location     `json:"location,omitempty"`
+	OwnerID    uuid.UUID     `json:"owner_id"`
+	Owner      *User         `json:"owner,omitempty"`
+	Image      string        `json:"image,omitempty"`
+	Images     []ImageAssets `json:"images,omitempty"`
+	CreatedAt  time.Time     `json:"created_at"`
+	UpdatedAt  time.Time     `json:"updated_at"`
 }
 
 type ImageAssets struct {
@@ -25,4 +27,14 @@ type ImageAssets struct {
 	ImageURL  string    `json:"image_url"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type CreateAssetRequest struct {
+	ID         uuid.UUID `json:"id"`
+	Name       string    `json:"name" validate:"required"`
+	CategoryID uuid.UUID `json:"category_id" validate:"required"`
+	LocationID uuid.UUID `json:"location_id" validate:"required"`
+	OwnerID    uuid.UUID `json:"owner_id" validate:"required"`
+	Image      string    `json:"image,omitempty"`
+	Images     []string  `json:"images,omitempty"`
 }

@@ -80,6 +80,7 @@ func (nm *NotificationManager) PublishNotification(notif *entities.Notification)
 }
 
 func (nm *NotificationManager) ListenToNotification() {
+	log.Println("kafka Notification stating")
 	for {
 		select {
 		case <-nm.ctx.Done():
@@ -95,6 +96,9 @@ func (nm *NotificationManager) ListenToNotification() {
 			time.Sleep(time.Second)
 			continue
 		}
+		log.Printf("topic %v", msg.Topic)
+		log.Printf("offse %v", msg.Offset)
+		log.Printf("Partition %v", msg.Partition)
 		var event Event
 		if err := json.Unmarshal(msg.Value, &event); err != nil {
 			log.Printf("Error unmarshaling event : %v", err)
