@@ -43,6 +43,7 @@ func main() {
 	roleRepo := repositories.NewRoleRepository(db)
 	profesRepo := repositories.NewProfessionRepository(db)
 	permissionRepo := repositories.NewPermissionsRepository(db)
+	assetRepo := repositories.NewAssetsRepositories(db)
 	//kafkaRepo
 	notifRepo := kafkarepo.NewnotificationsRepository(db)
 	notifService := kafkaservice.NewNotificationsKafkaService(notifRepo)
@@ -58,6 +59,7 @@ func main() {
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
 	profesService := services.NewProfessionsService(profesRepo)
 	permissionService := services.NewPermissionsService(permissionRepo)
+	assetService := services.NewAssetsService(assetRepo)
 
 	// messageManager, err := kafka.NewMessageManager(
 	// 	"localhost:9092",
@@ -71,6 +73,7 @@ func main() {
 	authHandler := handler.NewAuthHandler(authrService)
 	profesHandler := handler.NewProfessionsHandler(profesService)
 	permissionHandler := handler.NewPermissionHandler(permissionService)
+	assetHandler := handler.NewAssetsHandler(assetService)
 
 	app := fiber.New(fiber.Config{
 		ProxyHeader:             fiber.HeaderXForwardedFor,
@@ -111,6 +114,7 @@ func main() {
 		authHandler,
 		profesHandler,
 		permissionHandler,
+		assetHandler,
 	)
 	routes.SetUpRoute(app)
 
