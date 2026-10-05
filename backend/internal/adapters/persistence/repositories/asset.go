@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/adapters/persistence/models"
@@ -58,9 +57,6 @@ func (r *assetsRepositories) Create(ctx context.Context, asset *entities.Asset) 
 func (r *assetsRepositories) GetByID(ctx context.Context, assetID uuid.UUID) (*entities.Asset, error) {
 	var asset models.Assets
 	if err := r.db.WithContext(ctx).Preload("Category").First(asset, "id = ?", assetID).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("not found asset data")
-		}
 		return nil, err
 	}
 	return r.modelsToEntities(&asset), nil
@@ -88,4 +84,13 @@ func (r *assetsRepositories) modelsToEntities(assetModel *models.Assets) *entiti
 		}
 	}
 	return asset
+}
+
+func (r *assetsRepositories) GetByAssetExist(ctx context.Context, name string) (bool, error) {
+	var exists bool
+
+	if err := r.db.WithContext(ctx).Raw(`SELECT EXIST(SELECT 1) FROM assets WHERE name = ?`, name).Scan(&exists).Error; err != nil {
+		return false, err
+	}
+	return exists, nil
 }

@@ -10,6 +10,7 @@ import (
 type AuthService interface {
 	Register(ctx context.Context, req *entities.RegisterRequest) (*entities.User, error)
 	Login(ctx context.Context, req *entities.LoginRequest) (*entities.LoginResponse, error)
+	Logout(ctx context.Context, userID uuid.UUID) error
 	ChangePassword(ctx context.Context, userID uuid.UUID, req *entities.ChangePasswordRequest) error
 	RefreshToken(ctx context.Context, req *entities.RefreshTokenRequest) (*entities.LoginResponse, error)
 	ForgotPassword(ctx context.Context, req *entities.ForgotPasswordRequest) error

@@ -119,6 +119,9 @@ func (s *AuthService) Login(ctx context.Context, req *entities.LoginRequest) (*e
 		},
 	}, nil
 }
+func (s *AuthService) Logout(ctx context.Context, userID uuid.UUID) error {
+	return s.userRepo.SetRefreshToken(ctx, userID, "")
+}
 
 func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, req *entities.ChangePasswordRequest) error {
 	passwordHash, err := s.userRepo.GetPasswordHash(ctx, userID)

@@ -10,4 +10,5 @@ import (
 type AssetsRepositories interface {
 	Create(ctx context.Context, assets *entities.Asset) error
 	GetByID(ctx context.Context, assetID uuid.UUID) (*entities.Asset, error)
+	GetByAssetExist(ctx context.Context, name string) (bool, error)
 }
