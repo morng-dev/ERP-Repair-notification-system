@@ -1,9 +1,12 @@
 package config
 
 import (
+	"errors"
 	"log"
 
+	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/adapters/persistence/models"
+	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"gorm.io/gorm"
 )
 
@@ -12,6 +15,7 @@ func SeedDatabase(db *gorm.DB) error {
 	seedRoles(db)
 	seedPermission(db)
 	seedProfessions(db)
+	seedCategory(*db)
 	log.Println("seeding database success")
 	return nil
 }
@@ -103,6 +107,7 @@ func seedPermission(db *gorm.DB) error {
 }
 
 func seedProfessions(db *gorm.DB) error {
+
 	professions := []models.Profession{
 		{
 			Name:        "IT subport",
@@ -114,6 +119,12 @@ func seedProfessions(db *gorm.DB) error {
 		var exitsProfession models.Profession
 		if err := db.Where("name = ?", profession.Name).First(&exitsProfession).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
+				id, err := uuid.NewV7()
+				if err != nil {
+					return err
+				}
+
+				profession.ID = id
 				if err := db.Create(&profession).Error; err != nil {
 					log.Printf("❌ Error creating role %s: %v", profession.Name, err)
 					return err
@@ -121,6 +132,37 @@ func seedProfessions(db *gorm.DB) error {
 				log.Printf("✅ Role created: %s", profession.Name)
 			} else {
 				log.Printf("❌ Error checking role %s: %v", profession.Name, err)
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func seedCategory(db gorm.DB) error {
+	category := []entities.Category{
+		{
+			Name:        "เครื่องใช้ไฟฟ้า",
+			Description: "สำนักงาน",
+		},
+	}
+
+	for _, categorys := range category {
+		var existCategory models.Category
+		if err := db.Where("name = ?", categorys.Name).First(&existCategory).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				id, err := uuid.NewV7()
+				if err != nil {
+					return err
+				}
+				categorys.ID = id
+				if err := db.Create(&categorys).Error; err != nil {
+					log.Printf("Error creating role %s: %v", categorys.Name, err)
+					return err
+				}
+				log.Printf("create category success %v", categorys.Name)
+			} else {
+				log.Printf("Error category role %s: %v", categorys.Name, err)
 				return err
 			}
 		}

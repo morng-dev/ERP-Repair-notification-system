@@ -57,5 +57,5 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	permission.Put("/", r.permissionsHandler.UpdatePermission)
 
 	asset := api.Group("/asset")
-	asset.Post("/", r.assetHandler.CreateAsset)
+	asset.Post("/", r.authMW.AuthRequire(), r.assetHandler.CreateAsset)
 }

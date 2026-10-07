@@ -36,4 +36,10 @@ type CreateAssetRequest struct {
 	OwnerID    uuid.UUID `json:"owner_id" validate:"required"`
 	Image      string    `json:"image,omitempty"`
 	Images     []string  `json:"images,omitempty"`
+
+	Address   string  `json:"address"`
+	City      string  `json:"city"`
+	State     string  `json:"state"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }

@@ -12,7 +12,8 @@ import (
 )
 
 type AssetService struct {
-	assetRepo repositories.AssetsRepositories
+	assetRepo    repositories.AssetsRepositories
+	locationRepo repositories.LocationsRepository
 }
 
 func NewAssetsService(assetRepo repositories.AssetsRepositories) services.AssetService {
@@ -20,7 +21,7 @@ func NewAssetsService(assetRepo repositories.AssetsRepositories) services.AssetS
 }
 
 func (s *AssetService) CreateAsset(ctx context.Context, req *entities.CreateAssetRequest) error {
-	id, err := uuid.NewV7()
+	assetID, err := uuid.NewV7()
 	if err != nil {
 		return err
 	}
@@ -31,6 +32,24 @@ func (s *AssetService) CreateAsset(ctx context.Context, req *entities.CreateAsse
 	if exist {
 		return errors.New("wraning asset already exist !!!!")
 	}
+
+	locationID, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
+
+	location := &entities.Location{
+		ID:        locationID,
+		Latitude:  req.Latitude,
+		Longitude: req.Longitude,
+		Address:   req.Address,
+		City:      req.City,
+		State:     req.State,
+	}
+	createdLocation, err := s.locationRepo.Create(ctx, location)
+	if err != nil {
+		return err
+	}
 	var images []entities.ImageAssets
 
 	for _, imgURL := range req.Images {
@@ -40,10 +59,10 @@ func (s *AssetService) CreateAsset(ctx context.Context, req *entities.CreateAsse
 	}
 
 	asset := &entities.Asset{
-		ID:         id,
+		ID:         assetID,
 		Name:       req.Name,
 		CategoryID: req.CategoryID,
-		LocationID: req.LocationID,
+		LocationID: createdLocation.ID,
 		OwnerID:    req.OwnerID,
 		Image:      req.Image,
 		Images:     images,

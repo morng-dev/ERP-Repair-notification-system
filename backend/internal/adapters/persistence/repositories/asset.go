@@ -89,7 +89,7 @@ func (r *assetsRepositories) modelsToEntities(assetModel *models.Assets) *entiti
 func (r *assetsRepositories) GetByAssetExist(ctx context.Context, name string) (bool, error) {
 	var exists bool
 
-	if err := r.db.WithContext(ctx).Raw(`SELECT EXIST(SELECT 1) FROM assets WHERE name = ?`, name).Scan(&exists).Error; err != nil {
+	if err := r.db.WithContext(ctx).Raw(`SELECT EXISTS(SELECT 1) FROM assets WHERE name = ?`, name).Scan(&exists).Error; err != nil {
 		return false, err
 	}
 	return exists, nil
