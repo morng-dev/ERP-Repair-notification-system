@@ -44,6 +44,7 @@ func main() {
 	profesRepo := repositories.NewProfessionRepository(db)
 	permissionRepo := repositories.NewPermissionsRepository(db)
 	assetRepo := repositories.NewAssetsRepositories(db)
+	locationsRepo := repositories.NewLocationsRepository(db)
 	//kafkaRepo
 	notifRepo := kafkarepo.NewnotificationsRepository(db)
 	notifService := kafkaservice.NewNotificationsKafkaService(notifRepo)
@@ -59,7 +60,7 @@ func main() {
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
 	profesService := services.NewProfessionsService(profesRepo)
 	permissionService := services.NewPermissionsService(permissionRepo)
-	assetService := services.NewAssetsService(assetRepo)
+	assetService := services.NewAssetsService(assetRepo, locationsRepo)
 
 	// messageManager, err := kafka.NewMessageManager(
 	// 	"localhost:9092",

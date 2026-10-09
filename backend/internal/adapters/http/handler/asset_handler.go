@@ -19,6 +19,13 @@ func NewAssetsHandler(assetService services.AssetService) *AssetHandler {
 func (h *AssetHandler) CreateAsset(c *fiber.Ctx) error {
 	var id uuid.UUID
 	var req entities.CreateAssetRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
+			Success: false,
+			Message: "Invalid body request",
+			Error:   err.Error(),
+		})
+	}
 	if val := c.Locals("userID"); val != nil {
 		if uid, ok := val.(uuid.UUID); ok {
 			id = uid
@@ -49,13 +56,6 @@ func (h *AssetHandler) CreateAsset(c *fiber.Ctx) error {
 		id = Parsed
 	}
 	req.OwnerID = id
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
-			Success: false,
-			Message: "Invalid body request",
-			Error:   err.Error(),
-		})
-	}
 	if err := utils.ValidateStruct(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
 			Success: false,

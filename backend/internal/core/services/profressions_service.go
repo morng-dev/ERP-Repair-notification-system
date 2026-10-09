@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
 	"github.com/morng-dev/erp/internal/core/domain/ports/services"
@@ -22,7 +23,18 @@ func (s *ProfessionService) CreateProfession(ctx context.Context, req *entities.
 	if exist == nil {
 		return nil, errors.New("profession already exists")
 	}
-	profession, err := s.professRepo.Create(ctx, req)
+	id, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	profressions := &entities.Profession{
+		ID:          id,
+		Name:        req.Name,
+		Description: req.Description,
+	}
+
+	profession, err := s.professRepo.Create(ctx, profressions)
 	if err != nil {
 		return nil, err
 	}

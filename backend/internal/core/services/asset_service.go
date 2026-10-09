@@ -16,8 +16,11 @@ type AssetService struct {
 	locationRepo repositories.LocationsRepository
 }
 
-func NewAssetsService(assetRepo repositories.AssetsRepositories) services.AssetService {
-	return &AssetService{assetRepo: assetRepo}
+func NewAssetsService(assetRepo repositories.AssetsRepositories, locationRepo repositories.LocationsRepository) services.AssetService {
+	return &AssetService{
+		assetRepo:    assetRepo,
+		locationRepo: locationRepo,
+	}
 }
 
 func (s *AssetService) CreateAsset(ctx context.Context, req *entities.CreateAssetRequest) error {
@@ -53,7 +56,12 @@ func (s *AssetService) CreateAsset(ctx context.Context, req *entities.CreateAsse
 	var images []entities.ImageAssets
 
 	for _, imgURL := range req.Images {
+		id, err := uuid.NewV7()
+		if err != nil {
+			return err
+		}
 		images = append(images, entities.ImageAssets{
+			ID:       id,
 			ImageURL: imgURL,
 		})
 	}

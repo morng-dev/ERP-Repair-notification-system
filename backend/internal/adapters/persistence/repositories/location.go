@@ -10,10 +10,10 @@ import (
 )
 
 type LocationsRepository struct {
-	db gorm.DB
+	db *gorm.DB
 }
 
-func NewLocationsRepository(db gorm.DB) repositories.LocationsRepository {
+func NewLocationsRepository(db *gorm.DB) repositories.LocationsRepository {
 	return &LocationsRepository{db: db}
 }
 
