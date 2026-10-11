@@ -73,6 +73,9 @@ func (s *AuthService) Register(ctx context.Context, req *entities.RegisterReques
 }
 
 func (s *AuthService) Login(ctx context.Context, req *entities.LoginRequest) (*entities.LoginResponse, error) {
+	if !utils.IsEmail(req.Email) {
+		return nil, errors.New("รูปแบบอีเมลไม่ถูกต้อง")
+	}
 	user, err := s.userRepo.GetByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, errors.New("ผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")

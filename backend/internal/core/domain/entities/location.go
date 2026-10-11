@@ -17,3 +17,10 @@ type Location struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
+
+type UpdateLocation struct {
+	Description string `json:"description"`
+	Address     string `json:"address"`
+	City        string `json:"city"`
+	State       string `json:"state"`
+}

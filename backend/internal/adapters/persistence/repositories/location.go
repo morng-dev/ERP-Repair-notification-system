@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/adapters/persistence/models"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
@@ -42,4 +43,21 @@ func (r *LocationsRepository) Create(ctx context.Context, location *entities.Loc
 		CreatedAt:   locationModel.CreatedAt,
 		UpdatedAt:   locationModel.UpdatedAt,
 	}, nil
+}
+
+func (r *LocationsRepository) Update(ctx context.Context, locationID uuid.UUID, req *entities.UpdateLocation) error {
+	var update map[string]interface{}
+	if req.Description != "" {
+		update["Description"] = req.Description
+	}
+	if req.City != "" {
+		update["City"] = req.City
+	}
+	if req.Address != "" {
+		update["Address"] = req.Address
+	}
+	if req.State != "" {
+		update["State"] = req.State
+	}
+	return r.db.WithContext(ctx).Model(&models.Location{}).Where("id = ?", locationID).Updates(&update).Error
 }
