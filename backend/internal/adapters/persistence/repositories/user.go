@@ -32,10 +32,7 @@ func (r *UserRepository) Create(ctx context.Context, user *entities.User, passwo
 		RoleID:    user.RoleID,
 	}
 
-	if err := r.db.WithContext(ctx).Create(userModel).Error; err != nil {
-		return err
-	}
-	return nil
+	return r.db.WithContext(ctx).Create(userModel).Error
 
 }
 

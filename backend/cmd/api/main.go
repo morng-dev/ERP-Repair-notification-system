@@ -46,7 +46,7 @@ func main() {
 	assetRepo := repositories.NewAssetsRepositories(db)
 	locationsRepo := repositories.NewLocationsRepository(db)
 	//kafkaRepo
-	notifRepo := kafkarepo.NewnotificationsRepository(db)
+	notifRepo := kafkarepo.NewNotificationsRepository(db)
 	notifService := kafkaservice.NewNotificationsKafkaService(notifRepo)
 	//queue
 	nm, err := kafka.NewNotificationManager("localhost:29092", *nodeID, notifService)

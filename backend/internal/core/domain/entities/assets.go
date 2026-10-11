@@ -43,3 +43,12 @@ type CreateAssetRequest struct {
 	Latitude    float64 `json:"latitude" validate:"required"`
 	Longitude   float64 `json:"longitude" validate:"required"`
 }
+
+type AssetResponse struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	Image     string    `json:"image,omitempty"`
+	Category  *Category `json:"category,omitempty"`
+	Location  *Location `json:"location,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+}

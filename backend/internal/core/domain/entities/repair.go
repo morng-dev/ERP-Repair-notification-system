@@ -9,6 +9,7 @@ import (
 type Repair struct {
 	ID         uuid.UUID `json:"id"`
 	AssetID    uuid.UUID `json:"asset_id"`
+	Asset      *Asset    `json:"asset"`
 	ReportedBy uuid.UUID `json:"report_by"`
 	Reporter   *User     `json:"reporter"`
 	AssignedTo uuid.UUID `json:"assigned_to"`

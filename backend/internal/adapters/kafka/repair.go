@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
@@ -63,6 +64,18 @@ func (rpm *RepairManager) PublishRepair(repair *entities.Repair) error {
 		Value: eventByte,
 	}
 	return rpm.kafkaWriter.WriteMessages(ctx, msg)
+}
+
+func (rpm *RepairManager) SendRetries(repair *entities.Repair, maxRetries int) error {
+	for i := 0; i < maxRetries; i++ {
+		err := rpm.PublishRepair(repair)
+		if err == nil {
+			return nil
+		}
+		log.Printf("Retry %d faild for Repair: %v", i+1, err)
+		time.Sleep(time.Duration(i+1) * 100 * time.Millisecond)
+	}
+	return fmt.Errorf("faild to sent Repair after %d retry", maxRetries)
 }
 
 func (rpm *RepairManager) Close() {

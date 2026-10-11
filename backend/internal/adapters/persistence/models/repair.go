@@ -10,16 +10,17 @@ import (
 type Repair struct {
 	ID      uuid.UUID `gorm:"type:uuid;primary_key" json:"id"`
 	AssetID uuid.UUID `json:"asset_id"`
-	Asset   Assets    `gorm:"foreignKey:AssetID" json:"asset,omitempty"`
+	Asset   *Assets   `gorm:"foreignKey:AssetID" json:"asset,omitempty"`
 
 	ReportedBy uuid.UUID `json:"reported_by"`
-	Reporter   User      `gorm:"foreignKey:ReportedBy;references:ID"`
+	Reporter   *User     `gorm:"foreignKey:ReportedBy;references:ID"`
 
 	AssignedTo uuid.UUID `json:"assigned_to"`
-	Assignee   User      `gorm:"foreignKey:AssignedTo;references:ID" json:"assignee,omitempty"`
+	Assignee   *User     `gorm:"foreignKey:AssignedTo;references:ID" json:"assignee,omitempty"`
 
 	Status    string         `json:"status"`
 	Priority  string         `json:"priority"`
+	CreatedAt time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 }
