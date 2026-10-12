@@ -56,6 +56,7 @@ func main() {
 
 	//middle ware
 	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis, permissionRepo)
+	ratelimitMW := middleware.NewRatelimitMW(clientRedis)
 	//serivce
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
 	profesService := services.NewProfessionsService(profesRepo)
@@ -112,6 +113,7 @@ func main() {
 	})
 	routes := routes.NewRoutes(
 		authMW,
+		ratelimitMW,
 		authHandler,
 		profesHandler,
 		permissionHandler,

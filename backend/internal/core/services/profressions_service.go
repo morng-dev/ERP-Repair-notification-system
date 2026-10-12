@@ -18,7 +18,7 @@ func NewProfessionsService(professRepo repositories.ProfessionRepository) servic
 	return &ProfessionService{professRepo: professRepo}
 }
 
-func (s *ProfessionService) CreateProfession(ctx context.Context, req *entities.Profession) (*entities.Profession, error) {
+func (s *ProfessionService) CreateProfession(ctx context.Context, req *entities.CreateDescription) (*entities.Profession, error) {
 	_, exist := s.professRepo.GetByName(ctx, req.Name)
 	if exist == nil {
 		return nil, errors.New("profession already exists")

@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/morng-dev/erp/internal/adapters/http/handler"
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
@@ -8,6 +10,7 @@ import (
 
 type Routes struct {
 	authMW             *middleware.AuthMiddleware
+	ratelimitMW        *middleware.RatelimitMW
 	authHandler        *handler.AuthHandler
 	profesHandler      *handler.ProfessionHandler
 	permissionsHandler *handler.PermissionHandler
@@ -16,6 +19,7 @@ type Routes struct {
 
 func NewRoutes(
 	authMW *middleware.AuthMiddleware,
+	ratelimitMW *middleware.RatelimitMW,
 	authHandler *handler.AuthHandler,
 	profesHandler *handler.ProfessionHandler,
 	permissionsHandler *handler.PermissionHandler,
@@ -28,6 +32,7 @@ func NewRoutes(
 		profesHandler:      profesHandler,
 		permissionsHandler: permissionsHandler,
 		assetHandler:       assetHandler,
+		ratelimitMW:        ratelimitMW,
 	}
 }
 
@@ -44,15 +49,15 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	//auth
 	auth := api.Group("/auth")
 	auth.Post("/register", r.authHandler.Register)
-	auth.Post("/login", r.authHandler.Login)
+	auth.Post("/login", r.ratelimitMW.LimitRequest(45, time.Second), r.authHandler.Login)
 	auth.Post("/forget-password", r.authHandler.ForgotPassword)
 	auth.Post("/reset-password", r.authHandler.ResetPassword)
 	auth.Post("/change-password", r.authMW.AuthRequire(), r.authHandler.Changepassword)
 	//profession
-	profession := app.Group("/profession", r.authMW.AuthRequire())
-	profession.Post("/", r.authMW.PermissionRequire(PermissionCreateProfession))
+	profession := api.Group("/profession", r.authMW.AuthRequire())
+	profession.Post("/", r.authMW.PermissionRequire(PermissionCreateProfession), r.profesHandler.CreateProfession)
 	//permissions
-	permission := app.Group("/permission", r.authMW.AuthRequire())
+	permission := api.Group("/permission", r.authMW.AuthRequire())
 	permission.Post("/", r.permissionsHandler.CreatePermission)
 	permission.Put("/", r.permissionsHandler.UpdatePermission)
 

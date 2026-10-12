@@ -47,7 +47,7 @@ func (r *RepairRepository) GetByID(ctx context.Context, repairID uuid.UUID) (*en
 	return r.modelsToEntities(&repair), nil
 }
 
-func (r *RepairRepository) GetByAssetID(ctx context.Context, assetID uuid.UUID) (*entities.Repair, error)
+// func (r *RepairRepository) GetByAssetID(ctx context.Context, assetID uuid.UUID) (*entities.Repair, error)
 
 func (r *RepairRepository) modelsToEntities(repairModel *models.Repair) *entities.Repair {
 	repair := &entities.Repair{

@@ -7,5 +7,5 @@ import (
 )
 
 type ProfressionService interface {
-	CreateProfession(ctx context.Context, req *entities.Profession) (*entities.Profession, error)
+	CreateProfession(ctx context.Context, req *entities.CreateDescription) (*entities.Profession, error)
 }

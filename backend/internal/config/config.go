@@ -33,6 +33,11 @@ type Config struct {
 	SMTP_USERNAME string
 	SMTP_PASSWORD string
 	SMTP_FROM     string
+
+	AdminEmail     string
+	AdminPass      string
+	AdminFirstName string
+	AdminLastName  string
 }
 
 func LoadCongig() *Config {
@@ -72,6 +77,11 @@ func LoadCongig() *Config {
 		SMTP_USERNAME: os.Getenv("SMTP_USERNAME"),
 		SMTP_PASSWORD: os.Getenv("SMTP_PASSWORD"),
 		SMTP_FROM:     os.Getenv("SMTP_FROM"),
+
+		AdminEmail:     os.Getenv("ADMIN_EMAIL"),
+		AdminPass:      os.Getenv("ADMIN_PASS"),
+		AdminFirstName: os.Getenv("ADMIN_FIRST_NAME"),
+		AdminLastName:  os.Getenv("ADMIN_LAST_NAME"),
 	}
 	return config
 }

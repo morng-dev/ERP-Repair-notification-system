@@ -38,3 +38,8 @@ type UpdateUser struct {
 	LastName  string
 	Avatar    string
 }
+
+type CreateDescription struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}

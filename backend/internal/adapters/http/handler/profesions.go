@@ -17,7 +17,7 @@ func NewProfessionsHandler(professService services.ProfressionService) *Professi
 }
 
 func (h *ProfessionHandler) CreateProfession(c *fiber.Ctx) error {
-	var req entities.Profession
+	var req entities.CreateDescription
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
 			Success: false,

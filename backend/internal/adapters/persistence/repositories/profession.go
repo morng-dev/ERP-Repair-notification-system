@@ -20,6 +20,7 @@ func NewProfessionRepository(db *gorm.DB) repositories.ProfessionRepository {
 
 func (r *ProfessionRepository) Create(ctx context.Context, req *entities.Profession) (*entities.Profession, error) {
 	profess := &models.Profession{
+		ID:          req.ID,
 		Name:        req.Name,
 		Description: req.Description,
 	}
