@@ -9,7 +9,7 @@ import (
 
 type UserService interface {
 	GetUserAll(ctx context.Context, page, limit int) ([]*entities.User, *entities.PaginationResponse, error)
-	// GetUserByID()
+	GetUserByID(ctx context.Context, userID uuid.UUID) (*entities.User, error)
 	// UpdateUser()
 	// DeleteUser()
 	UserUpdateProfess(ctx context.Context, userID, profesID uuid.UUID) error

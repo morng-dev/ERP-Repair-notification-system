@@ -127,12 +127,21 @@ func (s *AuthService) Logout(ctx context.Context, userID uuid.UUID) error {
 }
 
 func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, req *entities.ChangePasswordRequest) error {
+	if req == nil {
+		return errors.New("invalid request")
+	}
+	if req.Oldpassword == "" || req.Newpassword == "" {
+		return errors.New("password is required")
+	}
 	passwordHash, err := s.userRepo.GetPasswordHash(ctx, userID)
 	if err != nil {
 		return err
 	}
 	if !utils.CompairPassword(req.Oldpassword, passwordHash) {
 		return errors.New("password invalid")
+	}
+	if utils.CompairPassword(req.Newpassword, passwordHash) {
+		return errors.New("new password must be different")
 	}
 	newPasswordhash, err := utils.HashPassword(req.Newpassword)
 	if err != nil {

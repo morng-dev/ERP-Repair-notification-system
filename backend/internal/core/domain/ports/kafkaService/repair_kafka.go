@@ -7,5 +7,5 @@ import (
 )
 
 type RepairKafkaService interface {
-	DeliverNotification(ctx context.Context, notif *entities.Repair) error
+	DeliverRepair(ctx context.Context, repair *entities.Repair) error
 }

@@ -59,6 +59,7 @@ func main() {
 	ratelimitMW := middleware.NewRatelimitMW(clientRedis)
 	//serivce
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
+	userService := services.NewUserService(userRepo)
 	profesService := services.NewProfessionsService(profesRepo)
 	permissionService := services.NewPermissionsService(permissionRepo)
 	assetService := services.NewAssetsService(assetRepo, locationsRepo)
@@ -73,6 +74,7 @@ func main() {
 	// }
 
 	authHandler := handler.NewAuthHandler(authrService)
+	userHandler := handler.NewUserHandler(userService)
 	profesHandler := handler.NewProfessionsHandler(profesService)
 	permissionHandler := handler.NewPermissionHandler(permissionService)
 	assetHandler := handler.NewAssetsHandler(assetService)
@@ -115,6 +117,7 @@ func main() {
 		authMW,
 		ratelimitMW,
 		authHandler,
+		userHandler,
 		profesHandler,
 		permissionHandler,
 		assetHandler,

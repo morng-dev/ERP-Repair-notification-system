@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,12 +18,11 @@ func NewRatelimitMW(clientRedis *redis.Client) *RatelimitMW {
 	}
 }
 
-func (m *RatelimitMW) LimitRequest(maxRequests int64, window time.Duration) fiber.Handler {
+func (m *RatelimitMW) RatelimitRequest(maxRequests int64, key string, window time.Duration) fiber.Handler {
 
 	return func(c *fiber.Ctx) error {
 		ctx := c.UserContext()
-		key := "ratelimit:login:" + c.IP()
-
+		k := fmt.Sprintf("ratelimit:%s:%s", key, c.IP())
 		count, err := m.clientRedis.Incr(ctx, key).Result()
 		if err != nil {
 			return c.Status(fiber.StatusServiceUnavailable).JSON(
@@ -32,9 +32,8 @@ func (m *RatelimitMW) LimitRequest(maxRequests int64, window time.Duration) fibe
 				},
 			)
 		}
-
 		if count == 1 {
-			if err := m.clientRedis.Expire(ctx, key, window).Err(); err != nil {
+			if err := m.clientRedis.Expire(ctx, k, window).Err(); err != nil {
 				_ = m.clientRedis.Del(ctx, key).Err()
 
 				return c.Status(fiber.StatusServiceUnavailable).JSON(
@@ -45,7 +44,6 @@ func (m *RatelimitMW) LimitRequest(maxRequests int64, window time.Duration) fibe
 				)
 			}
 		}
-
 		if count > maxRequests {
 			return c.Status(fiber.StatusTooManyRequests).JSON(
 				fiber.Map{

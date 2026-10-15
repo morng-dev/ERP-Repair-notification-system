@@ -42,11 +42,6 @@ func (h *ProfessionHandler) CreateProfession(c *fiber.Ctx) error {
 		})
 	}
 
-	// h.kafkaManager.PublicMessage(&kafka.Message{
-	// 	FromUserId: req.Name,
-	// 	ToUSerId:   req.Description,
-	// })
-
 	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
 		Success: true,
 		Message: "created success fully",

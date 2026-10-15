@@ -48,6 +48,12 @@ func (m *AuthMiddleware) AuthRequire() fiber.Handler {
 			})
 		}
 		userID, err := uuid.Parse(claims.UserID)
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
+				Message: "invalid user ID in token",
+			},
+			)
+		}
 		c.Locals("email", claims.Email)
 		c.Locals("userID", userID)
 		c.Locals("role", claims.Role)
@@ -63,7 +69,6 @@ func (m *AuthMiddleware) PermissionRequire(permission string) fiber.Handler {
 				Message: "invalid user",
 			})
 		}
-		// key := "user:permissions:" + userID.String() เดี๋ยวย้ายไป service
 		allowed, err := m.permissionsRepo.HasPermission(c.UserContext(), userID, permission)
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
@@ -77,4 +82,26 @@ func (m *AuthMiddleware) PermissionRequire(permission string) fiber.Handler {
 		}
 		return c.Next()
 	}
+}
+
+func (m *AuthMiddleware) Rolerequire(allowRoles ...string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		role, ok := c.Locals("role").(string)
+		if !ok {
+			return c.Status(fiber.StatusForbidden).JSON(entities.ApiResponse{
+				Success: false,
+				Message: "ไม่พบข้อมูล role",
+			})
+		}
+		for _, allowRole := range allowRoles {
+			if role == allowRole {
+				return c.Next()
+			}
+		}
+		return c.Status(fiber.StatusForbidden).JSON(entities.ApiResponse{
+			Success: false,
+			Message: "ไม่มีสิทธิ์เข้าถึง",
+		})
+	}
+
 }

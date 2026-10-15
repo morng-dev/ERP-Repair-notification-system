@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -76,6 +77,44 @@ func (rpm *RepairManager) SendRetries(repair *entities.Repair, maxRetries int) e
 		time.Sleep(time.Duration(i+1) * 100 * time.Millisecond)
 	}
 	return fmt.Errorf("faild to sent Repair after %d retry", maxRetries)
+}
+
+func (rpm *RepairManager) ListenRepair() {
+	log.Println("RepairManager started")
+	for {
+		select {
+		case <-rpm.ctx.Done():
+			log.Printf("stop RepairManager")
+			return
+		default:
+		}
+		msg, err := rpm.Repairreader.ReadMessage(rpm.ctx)
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				return
+			}
+			log.Printf("error to read Message : %v", err)
+			time.Sleep(time.Second)
+			continue
+		}
+		var event Event
+		if err := json.Unmarshal(msg.Value, &event); err != nil {
+			log.Printf("error unmarshal event : %v", err)
+			continue
+		}
+		if event.Type == "repair" {
+			var repair entities.Repair
+			if err := json.Unmarshal(event.Data, &repair); err != nil {
+				log.Printf("error unmarshal repair %v", err)
+				continue
+			}
+			if err := rpm.Repaihandler.DeliverRepair(rpm.ctx, &repair); err != nil {
+				log.Printf("error DeliverRepair : %v", err)
+				continue
+			}
+		}
+
+	}
 }
 
 func (rpm *RepairManager) Close() {
