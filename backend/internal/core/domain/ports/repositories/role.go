@@ -13,4 +13,5 @@ type RoleRepository interface {
 	GetByNameExist(ctx context.Context, name string) (bool, error)
 	Edit(ctx context.Context, roleID uuid.UUID, req *entities.RoleUpdate) error
 	GetByID(ctx context.Context, roleID uuid.UUID) (*entities.Role, error)
+	UpdatePermissions(ctx context.Context, roleID, permissionsID uuid.UUID) error
 }

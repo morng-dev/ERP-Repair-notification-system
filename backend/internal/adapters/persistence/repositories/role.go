@@ -63,6 +63,9 @@ func (r *roleRepository) GetByID(ctx context.Context, roleID uuid.UUID) (*entiti
 	}
 	return r.modelToEntity(&roleModel), nil
 }
+func (r *roleRepository) UpdatePermissions(ctx context.Context, roleID, permissionID uuid.UUID) error {
+	return r.db.WithContext(ctx).Exec("INSERT INTO role_permissions(role_id,permission_id) VALUE(?,?)", roleID, permissionID).Error
+}
 
 func (r *roleRepository) modelToEntity(role *models.Role) *entities.Role {
 	return &entities.Role{

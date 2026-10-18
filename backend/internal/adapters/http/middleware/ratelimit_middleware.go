@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -22,8 +23,15 @@ func (m *RatelimitMW) RatelimitRequest(maxRequests int64, key string, window tim
 
 	return func(c *fiber.Ctx) error {
 		ctx := c.UserContext()
-		k := fmt.Sprintf("ratelimit:%s:%s", key, c.IP())
-		count, err := m.clientRedis.Incr(ctx, key).Result()
+		keys := fmt.Sprintf("ratelimit:%s:%s", key, c.IP())
+
+		count, err := m.clientRedis.Incr(ctx, keys).Result()
+		log.Printf(
+			"[RATELIMIT] path=%s key=%s ip=%s",
+			c.Path(),
+			keys,
+			c.IP(),
+		)
 		if err != nil {
 			return c.Status(fiber.StatusServiceUnavailable).JSON(
 				fiber.Map{
@@ -33,7 +41,7 @@ func (m *RatelimitMW) RatelimitRequest(maxRequests int64, key string, window tim
 			)
 		}
 		if count == 1 {
-			if err := m.clientRedis.Expire(ctx, k, window).Err(); err != nil {
+			if err := m.clientRedis.Expire(ctx, keys, window).Err(); err != nil {
 				_ = m.clientRedis.Del(ctx, key).Err()
 
 				return c.Status(fiber.StatusServiceUnavailable).JSON(
@@ -48,7 +56,7 @@ func (m *RatelimitMW) RatelimitRequest(maxRequests int64, key string, window tim
 			return c.Status(fiber.StatusTooManyRequests).JSON(
 				fiber.Map{
 					"success": false,
-					"message": "เข้าสู่ระบบบ่อยเกินไป กรุณาลองใหม่ภายหลัง",
+					"message": "ทำรายการบ่อยเกินไป กรุณาลองใหม่ภายหลัง",
 				},
 			)
 		}

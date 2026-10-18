@@ -80,7 +80,7 @@ func (r *UserRepository) GetEmailExists(ctx context.Context, email string) (bool
 	return exists, nil
 }
 func (r *UserRepository) AddRole(ctx context.Context, userID, roleID uuid.UUID) error {
-	if err := r.db.WithContext(ctx).Where("id = ?", userID).Update("role_id", roleID).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", userID).Model(&models.User{}).Update("role_id", roleID).Error; err != nil {
 		return err
 	}
 	return nil

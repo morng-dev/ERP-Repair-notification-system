@@ -45,11 +45,15 @@ const (
 	PermissionDeleteProfession = "profession:delete"
 )
 const (
-	login          = "login"
-	Register       = "register"
-	forgetpassword = "forgetpassword"
-	resetpassword  = "resetpassword"
-	changepassword = "changepassword"
+	Ratelimitlogin          = "login"
+	RatelimitRegister       = "register"
+	Ratelimitforgetpassword = "forgetpassword"
+	Ratelimitresetpassword  = "resetpassword"
+	Ratelimitchangepassword = "changepassword"
+)
+const (
+	RoleAdmin = "admin"
+	RoleUser  = "user"
 )
 
 func (r *Routes) SetUpRoute(app *fiber.App) {
@@ -57,17 +61,17 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	api := app.Group("/api/v1")
 	//auth
 	auth := api.Group("/auth")
-	auth.Post("/register", r.ratelimitMW.RatelimitRequest(5, Register, time.Second), r.authHandler.Register)
-	auth.Post("/login", r.ratelimitMW.RatelimitRequest(10, login, time.Second), r.authHandler.Login)
-	auth.Post("/forget-password", r.ratelimitMW.RatelimitRequest(10, forgetpassword, time.Hour), r.authHandler.ForgotPassword)
+	auth.Post("/register", r.ratelimitMW.RatelimitRequest(5, RatelimitRegister, time.Minute), r.authHandler.Register)
+	auth.Post("/login", r.ratelimitMW.RatelimitRequest(5, Ratelimitlogin, time.Minute), r.authHandler.Login)
+	auth.Post("/forget-password", r.ratelimitMW.RatelimitRequest(10, Ratelimitforgetpassword, time.Hour), r.authHandler.ForgotPassword)
 	auth.Post("/reset-password", r.authHandler.ResetPassword)
-	auth.Post("/change-password", r.ratelimitMW.RatelimitRequest(5, changepassword, 30*time.Minute), r.authMW.AuthRequire(), r.authHandler.Changepassword)
+	auth.Post("/change-password", r.ratelimitMW.RatelimitRequest(5, Ratelimitchangepassword, 30*time.Minute), r.authMW.AuthRequire(), r.authHandler.Changepassword)
 	//user
 	user := api.Group("/user")
-	user.Get("/", r.userHandler.GetUser)
+	user.Get("/", r.authMW.Rolerequire(RoleAdmin), r.userHandler.GetUser)
 	//profession
 	profession := api.Group("/profession", r.authMW.AuthRequire())
-	profession.Post("/", r.authMW.PermissionRequire(PermissionCreateProfession), r.profesHandler.CreateProfession)
+	profession.Post("/", r.authMW.Rolerequire(RoleAdmin), r.authMW.PermissionRequire(PermissionCreateProfession), r.profesHandler.CreateProfession)
 	//permissions
 	permission := api.Group("/permission", r.authMW.AuthRequire())
 	permission.Post("/", r.permissionsHandler.CreatePermission)

@@ -36,3 +36,7 @@ func (s *RoleService) CreateRole(ctx context.Context, req *entities.Role) error 
 	}
 	return nil
 }
+
+func (s *RoleService) UpdatePermission(ctc context.Context, roleID, permissionID uuid.UUID) error {
+	return s.roleRepo.UpdatePermissions(ctc, roleID, permissionID)
+}
