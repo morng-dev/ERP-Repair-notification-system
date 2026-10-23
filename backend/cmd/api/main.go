@@ -35,6 +35,7 @@ func main() {
 	mailer := mail.NewSmtpMailer(cfg.SMTP_HOST, cfg.SMTP_USERNAME, cfg.SMTP_PASSWORD, cfg.SMTP_FROM, cfg.APPURL, cfg.SMTP_PORT)
 	//redis cache
 	userRedisRepo := redis.NewUserRedisRepo(clientRedis)
+	PermissionRedisRepo := redis.NewPermissioncache(clientRedis)
 	//repo
 	userRepo := repositories.NewUserRepository(db)
 	roleRepo := repositories.NewRoleRepository(db)
@@ -55,16 +56,16 @@ func main() {
 		log.Fatalf("failed to initialize notification manager: %v", err)
 	}
 
-	//middle ware
-	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis, permissionRepo)
-	ratelimitMW := middleware.NewRatelimitMW(clientRedis)
 	//serivce
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
 	userService := services.NewUserService(userRepo)
 	profesService := services.NewProfessionsService(profesRepo)
-	permissionService := services.NewPermissionsService(permissionRepo)
+	permissionService := services.NewPermissionsService(permissionRepo, PermissionRedisRepo)
 	assetService := services.NewAssetsService(assetRepo, locationsRepo)
 	roleService := services.NewRoleService(roleRepo, permissionRepo)
+	//middle ware
+	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis, permissionService)
+	ratelimitMW := middleware.NewRatelimitMW(clientRedis)
 
 	authHandler := handler.NewAuthHandler(authrService)
 	userHandler := handler.NewUserHandler(userService)

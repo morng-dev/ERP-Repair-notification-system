@@ -6,22 +6,22 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
-	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
+	"github.com/morng-dev/erp/internal/core/domain/ports/services"
 	"github.com/morng-dev/erp/pkg/utils"
 	"github.com/redis/go-redis/v9"
 )
 
 type AuthMiddleware struct {
-	jwtSecret       string
-	clientRedis     *redis.Client
-	permissionsRepo repositories.PermissionsRepository
+	jwtSecret          string
+	clientRedis        *redis.Client
+	permissionsService services.PermissionsService
 }
 
-func NewAuthMiddleware(jwtSecret string, clientRedis *redis.Client, permissionsRepo repositories.PermissionsRepository) *AuthMiddleware {
+func NewAuthMiddleware(jwtSecret string, clientRedis *redis.Client, permissionsService services.PermissionsService) *AuthMiddleware {
 	return &AuthMiddleware{
-		jwtSecret:       jwtSecret,
-		clientRedis:     clientRedis,
-		permissionsRepo: permissionsRepo,
+		jwtSecret:          jwtSecret,
+		clientRedis:        clientRedis,
+		permissionsService: permissionsService,
 	}
 }
 
@@ -69,7 +69,7 @@ func (m *AuthMiddleware) PermissionRequire(permission string) fiber.Handler {
 				Message: "invalid user",
 			})
 		}
-		allowed, err := m.permissionsRepo.HasPermission(c.UserContext(), userID, permission)
+		allowed, err := m.permissionsService.HasPermission(c.UserContext(), userID, permission)
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
 				Message: "error checking permissions",

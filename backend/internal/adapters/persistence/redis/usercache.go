@@ -36,10 +36,14 @@ func (r *UserRedisRepo) Get(ctx context.Context, userID uuid.UUID) (*entities.Us
 
 }
 
-func (r *UserRedisRepo) Set(ctx context.Context, req *entities.User) error {
-	data, err := json.Marshal(req)
+func (r *UserRedisRepo) Set(ctx context.Context, user *entities.User) error {
+	data, err := json.Marshal(user)
 	if err != nil {
 		return err
 	}
-	return r.client.Set(ctx, "user:"+req.ID.String(), data, 10*time.Minute).Err()
+	return r.client.Set(ctx, "user:"+user.ID.String(), data, 10*time.Minute).Err()
+}
+
+func (r *UserRedisRepo) Delete(ctx context.Context, userID uuid.UUID) error {
+	return r.client.Del(ctx, "user:"+userID.String()).Err()
 }

@@ -58,6 +58,26 @@ func (r *PermissionsRepository) GetAll(ctx context.Context, page, limit int) ([]
 	return result, int(total), nil
 }
 
+func (r *PermissionsRepository) GetByUserID(ctx context.Context, userID uuid.UUID) ([]*entities.Permission, error) {
+	var permissionModel []models.Permission
+	err := r.db.WithContext(ctx).Model(&models.Permission{}).
+		Joins("JOIN role_permissions rp on rp.permission_id = permissions.id").
+		Joins("JOIN users u on u.role_id = rp.role_id").
+		Where("u.id = ?", userID).
+		Distinct().
+		Find(&permissionModel).Error
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*entities.Permission, 0, len(permissionModel))
+
+	for i := range permissionModel {
+		result = append(result, r.modelToEntity(&permissionModel[i]))
+	}
+	return result, nil
+}
+
 func (r *PermissionsRepository) GetByName(ctx context.Context, name string) (*entities.Permission, error) {
 	var permission models.Permission
 	if err := r.db.WithContext(ctx).First(&permission, "name = ?", name).Error; err != nil {

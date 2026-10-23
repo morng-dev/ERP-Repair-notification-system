@@ -7,16 +7,21 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
+	"github.com/morng-dev/erp/internal/core/domain/ports/cache"
 	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
 	"github.com/morng-dev/erp/internal/core/domain/ports/services"
 )
 
 type PermissionsService struct {
-	permissionsRepo repositories.PermissionsRepository
+	permissionsRepo      repositories.PermissionsRepository
+	permissionsRedisRepo cache.PermissionRedisRepo
 }
 
-func NewPermissionsService(permissionsRepo repositories.PermissionsRepository) services.PermissionsService {
-	return &PermissionsService{permissionsRepo: permissionsRepo}
+func NewPermissionsService(permissionsRepo repositories.PermissionsRepository, permissionsRedisRepo cache.PermissionRedisRepo) services.PermissionsService {
+	return &PermissionsService{
+		permissionsRepo:      permissionsRepo,
+		permissionsRedisRepo: permissionsRedisRepo,
+	}
 }
 
 func (s *PermissionsService) CreatePermissions(ctx context.Context, req *entities.Permission) error {
@@ -53,6 +58,32 @@ func (s *PermissionsService) GetAllPermissions(ctx context.Context, page, limit 
 	}
 	return permission, pagination, nil
 
+}
+func (s *PermissionsService) HasPermission(ctx context.Context, userID uuid.UUID, permission string) (bool, error) {
+	permissions, err := s.permissionsRedisRepo.Get(ctx, userID)
+	if err != nil {
+		permissions, err = s.permissionsRepo.GetByUserID(ctx, userID)
+		if err != nil {
+			return false, err
+		}
+
+		_ = s.permissionsRedisRepo.Set(ctx, userID, permissions)
+
+	} else if permissions == nil {
+		permissions, err = s.permissionsRepo.GetByUserID(ctx, userID)
+		if err != nil {
+			return false, err
+		}
+
+		_ = s.permissionsRedisRepo.Set(ctx, userID, permissions)
+	}
+
+	for _, p := range permissions {
+		if p != nil && p.Name == permission {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func (s *PermissionsService) UpdatePermissions(ctx context.Context, permissionID uuid.UUID, req *entities.PermissionUpdate) error {

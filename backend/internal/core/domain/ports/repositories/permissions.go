@@ -9,6 +9,7 @@ import (
 
 type PermissionsRepository interface {
 	Create(ctx context.Context, permissions *entities.Permission) error
+	GetByUserID(ctx context.Context, userID uuid.UUID) ([]*entities.Permission, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*entities.Permission, error)
 	GetByExist(ctx context.Context, id uuid.UUID) (bool, error)
 	GetByName(ctx context.Context, name string) (*entities.Permission, error)
