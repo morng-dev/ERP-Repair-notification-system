@@ -58,7 +58,7 @@ func main() {
 
 	//serivce
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
-	userService := services.NewUserService(userRepo)
+	userService := services.NewUserService(userRepo, userRedisRepo)
 	profesService := services.NewProfessionsService(profesRepo)
 	permissionService := services.NewPermissionsService(permissionRepo, PermissionRedisRepo)
 	assetService := services.NewAssetsService(assetRepo, locationsRepo)
