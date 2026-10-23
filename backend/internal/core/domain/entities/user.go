@@ -34,12 +34,17 @@ type UpdateProfesion struct {
 	Description string `json:"description"`
 }
 type UpdateUser struct {
-	FirstName string
-	LastName  string
-	Avatar    string
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Avatar    string `json:"avatar"`
 }
 
 type CreateDescription struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
+}
+
+type UserListCacheData struct {
+	User       []*User
+	Pagination *PaginationResponse
 }

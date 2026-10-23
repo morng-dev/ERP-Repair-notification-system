@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/cache"
 	"github.com/redis/go-redis/v9"
@@ -20,30 +20,55 @@ func NewUserRedisRepo(client *redis.Client) cache.UserRedisRepo {
 	return &UserRedisRepo{client: client}
 }
 
-func (r *UserRedisRepo) Get(ctx context.Context, userID uuid.UUID) (*entities.User, error) {
-	val, err := r.client.Get(ctx, "user:"+userID.String()).Result()
+func userListKey(page, limit int) string {
+	return fmt.Sprintf("users:list:page:%d:limit:%d", page, limit)
+}
+
+func (r *UserRedisRepo) GetAll(ctx context.Context, page, limit int) (*entities.UserListCacheData, error) {
+	key := userListKey(page, limit)
+	byteData, err := r.client.Get(ctx, key).Bytes()
 	if errors.Is(err, redis.Nil) {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, err
 	}
-	var user entities.User
-	if err := json.Unmarshal([]byte(val), &user); err != nil {
+	var data entities.UserListCacheData
+	if err := json.Unmarshal(byteData, &data); err != nil {
 		return nil, err
 	}
-	return &user, nil
 
+	return &data, nil
 }
 
-func (r *UserRedisRepo) Set(ctx context.Context, user *entities.User) error {
-	data, err := json.Marshal(user)
+func (r *UserRedisRepo) SetAll(ctx context.Context, page, limit int, data *entities.UserListCacheData) error {
+	key := userListKey(page, limit)
+	value, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
-	return r.client.Set(ctx, "user:"+user.ID.String(), data, 10*time.Minute).Err()
+
+	return r.client.Set(ctx, key, value, 5*time.Minute).Err()
 }
 
-func (r *UserRedisRepo) Delete(ctx context.Context, userID uuid.UUID) error {
-	return r.client.Del(ctx, "user:"+userID.String()).Err()
+func (r *UserRedisRepo) DeleteAll(ctx context.Context) error {
+	var cursor uint64
+
+	for {
+		keys, nextCursor, err := r.client.Scan(ctx, cursor, "users:list:*", 100).Result()
+		if err != nil {
+			return err
+		}
+		if len(keys) > 0 {
+			if err := r.client.Del(ctx, keys...).Err(); err != nil {
+				return err
+			}
+		}
+		cursor = nextCursor
+		if cursor == 0 {
+			break
+		}
+	}
+
+	return nil
 }

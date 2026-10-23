@@ -3,11 +3,11 @@ package cache
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 )
 
 type UserRedisRepo interface {
-	Get(ctx context.Context, id uuid.UUID) (*entities.User, error)
-	Set(ctx context.Context, user *entities.User) error
+	GetAll(ctx context.Context, page, limit int) (*entities.UserListCacheData, error)
+	SetAll(ctx context.Context, page, limit int, data *entities.UserListCacheData) error
+	DeleteAll(ctx context.Context) error
 }
