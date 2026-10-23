@@ -1,5 +1,6 @@
-tmp/
 bin/
 *.exe
 .env
 .vscode/
+.air.toml
+tmp/
