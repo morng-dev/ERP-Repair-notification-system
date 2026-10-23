@@ -60,10 +60,10 @@ type MessageManager struct {
 	cancel        context.CancelFunc
 }
 
-func NewMessageManager(kafaAddr string, nodeID string, handler kafkaservice.MessageHandler) (*MessageManager, error) {
+func NewMessageManager(kafaAddr []string, nodeID string, handler kafkaservice.MessageHandler) (*MessageManager, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	writer := &kafka.Writer{
-		Addr:         kafka.TCP(kafaAddr),
+		Addr:         kafka.TCP(kafaAddr...),
 		Balancer:     &kafka.Hash{},
 		BatchTimeout: 10 * time.Millisecond,
 		WriteTimeout: 10 * time.Second,
@@ -71,7 +71,7 @@ func NewMessageManager(kafaAddr string, nodeID string, handler kafkaservice.Mess
 	}
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafaAddr},
+		Brokers:        kafaAddr,
 		Topic:          "message-topic",
 		GroupID:        "message-group-" + nodeID,
 		MaxBytes:       10e6,

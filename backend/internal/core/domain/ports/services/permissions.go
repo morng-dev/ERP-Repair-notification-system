@@ -9,5 +9,6 @@ import (
 
 type PermissionsService interface {
 	CreatePermissions(ctx context.Context, req *entities.Permission) error
+	GetAllPermissions(ctx context.Context, page, limit int) ([]*entities.Permission, *entities.PaginationResponse, error)
 	UpdatePermissions(ctx context.Context, permissionID uuid.UUID, req *entities.PermissionUpdate) error
 }

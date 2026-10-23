@@ -9,6 +9,7 @@ import (
 
 type RoleRepository interface {
 	Create(ctx context.Context, role *entities.Role) error
+	GetAll(ctx context.Context, page, limit int) ([]*entities.Role, int, error)
 	GetByName(ctx context.Context, name string) (*entities.Role, error)
 	GetByNameExist(ctx context.Context, name string) (bool, error)
 	Edit(ctx context.Context, roleID uuid.UUID, req *entities.RoleUpdate) error

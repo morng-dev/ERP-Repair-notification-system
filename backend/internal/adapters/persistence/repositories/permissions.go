@@ -65,6 +65,14 @@ func (r *PermissionsRepository) GetByName(ctx context.Context, name string) (*en
 	}
 	return r.modelToEntity(&permission), nil
 }
+func (r *PermissionsRepository) GetByExist(ctx context.Context, id uuid.UUID) (bool, error) {
+	var exists bool
+	err := r.db.WithContext(ctx).Raw(`SELECT EXISTS(SELECT 1) FROM role WHERE id = ?`, id).Scan(&exists).Error
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
 
 func (r *PermissionsRepository) Update(ctx context.Context, id uuid.UUID, req *entities.PermissionUpdate) error {
 	updated := map[string]interface{}{}

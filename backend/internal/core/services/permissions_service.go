@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"math"
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
@@ -36,6 +37,22 @@ func (s *PermissionsService) CreatePermissions(ctx context.Context, req *entitie
 		return errors.New("ไม่สามารถสร้างรายการได้")
 	}
 	return nil
+}
+
+func (s *PermissionsService) GetAllPermissions(ctx context.Context, page, limit int) ([]*entities.Permission, *entities.PaginationResponse, error) {
+	permission, total, err := s.permissionsRepo.GetAll(ctx, page, limit)
+	if err != nil {
+		return nil, nil, err
+	}
+	pageTotal := int(math.Ceil(float64(page / limit)))
+	pagination := &entities.PaginationResponse{
+		Page:       page,
+		Limit:      limit,
+		TotalPages: pageTotal,
+		TotalItems: total,
+	}
+	return permission, pagination, nil
+
 }
 
 func (s *PermissionsService) UpdatePermissions(ctx context.Context, permissionID uuid.UUID, req *entities.PermissionUpdate) error {

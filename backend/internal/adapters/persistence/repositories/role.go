@@ -26,6 +26,24 @@ func (r *roleRepository) Create(ctx context.Context, role *entities.Role) error 
 	return r.db.WithContext(ctx).Create(roleModel).Error
 }
 
+func (r *roleRepository) GetAll(ctx context.Context, page, limit int) ([]*entities.Role, int, error) {
+	var roles []models.Role
+	var total int64
+	offset := (page - 1) * limit
+
+	if err := r.db.WithContext(ctx).Model(&roles).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := r.db.WithContext(ctx).Offset(offset).Limit(limit).Find(&roles).Error; err != nil {
+		return nil, 0, err
+	}
+	var result []*entities.Role
+	for _, role := range roles {
+		result = append(result, r.modelToEntity(&role))
+	}
+	return result, int(total), nil
+}
+
 func (r *roleRepository) GetByName(ctx context.Context, name string) (*entities.Role, error) {
 	var role models.Role
 	if err := r.db.WithContext(ctx).Where("name = ?", name).First(&role).Error; err != nil {
@@ -64,7 +82,7 @@ func (r *roleRepository) GetByID(ctx context.Context, roleID uuid.UUID) (*entiti
 	return r.modelToEntity(&roleModel), nil
 }
 func (r *roleRepository) UpdatePermissions(ctx context.Context, roleID, permissionID uuid.UUID) error {
-	return r.db.WithContext(ctx).Exec("INSERT INTO role_permissions(role_id,permission_id) VALUE(?,?)", roleID, permissionID).Error
+	return r.db.WithContext(ctx).Exec("INSERT INTO role_permissions(role_id,permission_id) VALUES(?,?)", roleID, permissionID).Error
 }
 
 func (r *roleRepository) modelToEntity(role *models.Role) *entities.Role {

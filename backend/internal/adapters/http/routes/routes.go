@@ -16,6 +16,7 @@ type Routes struct {
 	profesHandler      *handler.ProfessionHandler
 	permissionsHandler *handler.PermissionHandler
 	assetHandler       *handler.AssetHandler
+	roleHandler        *handler.RoleHandler
 }
 
 func NewRoutes(
@@ -26,6 +27,7 @@ func NewRoutes(
 	profesHandler *handler.ProfessionHandler,
 	permissionsHandler *handler.PermissionHandler,
 	assetHandler *handler.AssetHandler,
+	roleHandler *handler.RoleHandler,
 
 ) *Routes {
 	return &Routes{
@@ -35,6 +37,7 @@ func NewRoutes(
 		permissionsHandler: permissionsHandler,
 		assetHandler:       assetHandler,
 		ratelimitMW:        ratelimitMW,
+		roleHandler:        roleHandler,
 	}
 }
 
@@ -72,8 +75,13 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	//profession
 	profession := api.Group("/profession", r.authMW.AuthRequire())
 	profession.Post("/", r.authMW.Rolerequire(RoleAdmin), r.authMW.PermissionRequire(PermissionCreateProfession), r.profesHandler.CreateProfession)
+	//role
+	role := api.Group("/role", r.authMW.AuthRequire(), r.authMW.Rolerequire(RoleAdmin))
+	role.Get("/", r.roleHandler.GetAllRole)
+	role.Post("/", r.roleHandler.CreateRole)
 	//permissions
-	permission := api.Group("/permission", r.authMW.AuthRequire())
+	permission := api.Group("/permission", r.authMW.AuthRequire(), r.authMW.Rolerequire(RoleAdmin))
+	permission.Get("/", r.permissionsHandler.GetAllPermissions)
 	permission.Post("/", r.permissionsHandler.CreatePermission)
 	permission.Put("/", r.permissionsHandler.UpdatePermission)
 

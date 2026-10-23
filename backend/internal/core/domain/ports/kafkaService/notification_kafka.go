@@ -6,6 +6,6 @@ import (
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 )
 
-type NotificationHandler interface {
+type NotificationService interface {
 	DeliverNotification(ctx context.Context, notif *entities.Notification) error
 }

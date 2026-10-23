@@ -42,7 +42,7 @@ func (m *RatelimitMW) RatelimitRequest(maxRequests int64, key string, window tim
 		}
 		if count == 1 {
 			if err := m.clientRedis.Expire(ctx, keys, window).Err(); err != nil {
-				_ = m.clientRedis.Del(ctx, key).Err()
+				_ = m.clientRedis.Del(ctx, keys).Err()
 
 				return c.Status(fiber.StatusServiceUnavailable).JSON(
 					fiber.Map{

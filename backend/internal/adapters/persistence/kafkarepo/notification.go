@@ -14,7 +14,7 @@ type notificationsRepository struct {
 	db *gorm.DB
 }
 
-func NewNotificationsRepository(db *gorm.DB) kafkaservice.NotificationHandler {
+func NewNotificationsRepository(db *gorm.DB) kafkaservice.NotificationService {
 	return &notificationsRepository{db: db}
 }
 

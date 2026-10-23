@@ -10,6 +10,7 @@ import (
 type PermissionsRepository interface {
 	Create(ctx context.Context, permissions *entities.Permission) error
 	GetByID(ctx context.Context, id uuid.UUID) (*entities.Permission, error)
+	GetByExist(ctx context.Context, id uuid.UUID) (bool, error)
 	GetByName(ctx context.Context, name string) (*entities.Permission, error)
 	GetAll(ctx context.Context, page, limit int) ([]*entities.Permission, int, error)
 	Update(ctx context.Context, id uuid.UUID, req *entities.PermissionUpdate) error

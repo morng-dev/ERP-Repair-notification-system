@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -27,8 +26,6 @@ import (
 )
 
 func main() {
-	nodeID := flag.String("node", "node1", "not id for this instance")
-	flag.Parse()
 	cfg := config.LoadCongig()
 	//db
 	db := config.Setupdatabase(cfg)
@@ -47,9 +44,13 @@ func main() {
 	locationsRepo := repositories.NewLocationsRepository(db)
 	//kafkaRepo
 	notifRepo := kafkarepo.NewNotificationsRepository(db)
-	notifService := kafkaservice.NewNotificationsKafkaService(notifRepo)
+	notifkafkaService := kafkaservice.NewNotificationsKafkaService(notifRepo)
 	//queue
-	nm, err := kafka.NewNotificationManager("localhost:29092", *nodeID, notifService)
+	nm, err := kafka.NewNotificationManager(
+		cfg.KafkaBrokers,
+		cfg.NodeID,
+		notifkafkaService,
+	)
 	if err != nil {
 		log.Fatalf("failed to initialize notification manager: %v", err)
 	}
@@ -63,21 +64,14 @@ func main() {
 	profesService := services.NewProfessionsService(profesRepo)
 	permissionService := services.NewPermissionsService(permissionRepo)
 	assetService := services.NewAssetsService(assetRepo, locationsRepo)
-
-	// messageManager, err := kafka.NewMessageManager(
-	// 	"localhost:9092",
-	// 	"erp-api-1",
-	// 	kafkaHandler{},
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	roleService := services.NewRoleService(roleRepo, permissionRepo)
 
 	authHandler := handler.NewAuthHandler(authrService)
 	userHandler := handler.NewUserHandler(userService)
 	profesHandler := handler.NewProfessionsHandler(profesService)
 	permissionHandler := handler.NewPermissionHandler(permissionService)
 	assetHandler := handler.NewAssetsHandler(assetService)
+	roleHandler := handler.NewRoleHandler(roleService)
 
 	app := fiber.New(fiber.Config{
 		ProxyHeader:             fiber.HeaderXForwardedFor,
@@ -121,6 +115,7 @@ func main() {
 		profesHandler,
 		permissionHandler,
 		assetHandler,
+		roleHandler,
 	)
 	routes.SetUpRoute(app)
 

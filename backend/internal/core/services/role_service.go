@@ -3,10 +3,12 @@ package services
 import (
 	"context"
 	"errors"
+	"math"
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
+	"github.com/morng-dev/erp/internal/core/domain/ports/services"
 )
 
 type RoleService struct {
@@ -14,7 +16,14 @@ type RoleService struct {
 	permissison repositories.PermissionsRepository
 }
 
-func (s *RoleService) CreateRole(ctx context.Context, req *entities.Role) error {
+func NewRoleService(roleRepo repositories.RoleRepository, permissison repositories.PermissionsRepository) services.RoleService {
+	return &RoleService{
+		roleRepo:    roleRepo,
+		permissison: permissison,
+	}
+}
+
+func (s *RoleService) CreateRole(ctx context.Context, req *entities.CreateRoleRequest) error {
 	id, err := uuid.NewV7()
 	if err != nil {
 		return err
@@ -35,6 +44,22 @@ func (s *RoleService) CreateRole(ctx context.Context, req *entities.Role) error 
 		return err
 	}
 	return nil
+}
+
+func (s *RoleService) GetAllRole(ctx context.Context, page, limit int) ([]*entities.Role, *entities.PaginationResponse, error) {
+
+	role, total, err := s.roleRepo.GetAll(ctx, page, limit)
+	if err != nil {
+		return nil, nil, err
+	}
+	totalPage := int(math.Ceil(float64(total) / float64(limit)))
+	pagination := &entities.PaginationResponse{
+		Page:       page,
+		Limit:      limit,
+		TotalPages: totalPage,
+		TotalItems: total,
+	}
+	return role, pagination, nil
 }
 
 func (s *RoleService) UpdatePermission(ctc context.Context, roleID, permissionID uuid.UUID) error {

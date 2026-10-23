@@ -17,23 +17,23 @@ import (
 type NotificationManager struct {
 	kafkaWriter  *kafka.Writer
 	NotifReader  *kafka.Reader
-	NotifHandler kafkaservice.NotificationHandler
+	NotifHandler kafkaservice.NotificationService
 	ctx          context.Context
 	cancel       context.CancelFunc
 }
 
-func NewNotificationManager(kafkaAddr string, nodeID string, handler kafkaservice.NotificationHandler) (*NotificationManager, error) {
+func NewNotificationManager(kafkaAddr []string, nodeID string, handler kafkaservice.NotificationService) (*NotificationManager, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	writer := &kafka.Writer{
-		Addr:         kafka.TCP(kafkaAddr),
+		Addr:         kafka.TCP(kafkaAddr...),
 		Balancer:     &kafka.Hash{},
 		BatchTimeout: 10 * time.Millisecond,
 		WriteTimeout: 10 * time.Second,
 		RequiredAcks: kafka.RequireOne,
 	}
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddr},
+		Brokers:        kafkaAddr,
 		Topic:          "notifications-topic",
 		GroupID:        "notification-group-" + nodeID,
 		MaxBytes:       10e6,

@@ -8,10 +8,10 @@ import (
 )
 
 type NotificationsService struct {
-	notifHanler kafkaservice.NotificationHandler
+	notifHanler kafkaservice.NotificationService
 }
 
-func NewNotificationsKafkaService(notifHanler kafkaservice.NotificationHandler) kafkaservice.NotificationHandler {
+func NewNotificationsKafkaService(notifHanler kafkaservice.NotificationService) kafkaservice.NotificationService {
 	return &NotificationsService{notifHanler: notifHanler}
 }
 

@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -24,6 +25,9 @@ type Config struct {
 	RedisPort string
 	RedisPass string
 	RedisDB   int
+
+	NodeID       string
+	KafkaBrokers []string
 
 	JWTSecret    string
 	JWTExpiresIn string
@@ -53,6 +57,20 @@ func LoadCongig() *Config {
 	if err != nil {
 		log.Printf("Warning: SMTP_PORT found, relying on environment variables")
 	}
+	nodeID, err := os.Hostname()
+	if err != nil {
+		log.Fatalf("failed to get hostname: %v", err)
+	}
+	brokers := strings.Split(os.Getenv("KAFKA_BROKERS"), ",")
+	kafkaBrokers := make([]string, 0, len(brokers))
+
+	for _, broker := range brokers {
+		broker = strings.TrimSpace(broker)
+		if broker != "" {
+			kafkaBrokers = append(kafkaBrokers, broker)
+		}
+	}
+
 	config := &Config{
 		APPENV:    os.Getenv("APP_ENV"),
 		APPPORT:   os.Getenv("APP_PORT"),
@@ -68,6 +86,9 @@ func LoadCongig() *Config {
 		RedisPort: os.Getenv("REDIS_PORT"),
 		RedisPass: os.Getenv("REDIS_PASS"),
 		RedisDB:   db,
+
+		NodeID:       nodeID,
+		KafkaBrokers: kafkaBrokers,
 
 		JWTSecret:    os.Getenv("JWT_SECRET"),
 		JWTExpiresIn: os.Getenv("JWT_EXPIRES_IN"),
