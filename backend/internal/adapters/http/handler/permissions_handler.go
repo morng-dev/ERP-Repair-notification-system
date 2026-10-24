@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"strconv"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
@@ -49,15 +47,7 @@ func (h *PermissionHandler) CreatePermission(c *fiber.Ctx) error {
 }
 
 func (h *PermissionHandler) GetAllPermissions(c *fiber.Ctx) error {
-	page, _ := strconv.Atoi(c.Query("page", "1"))
-	limit, _ := strconv.Atoi(c.Query("limit", "10"))
-	if page < 0 {
-		page = 1
-	}
-	if limit < 0 || limit > 100 {
-		limit = 10
-	}
-	permissions, pagination, err := h.permissionService.GetAllPermissions(c.Context(), page, limit)
+	permissions, err := h.permissionService.GetAllPermissions(c.Context())
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(entities.ErrorResponse{
 			Success: false,
@@ -65,10 +55,9 @@ func (h *PermissionHandler) GetAllPermissions(c *fiber.Ctx) error {
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
-		Success:    true,
-		Message:    "read data success",
-		Pagination: pagination,
-		Data:       permissions,
+		Success: true,
+		Message: "read data success",
+		Data:    permissions,
 	})
 }
 

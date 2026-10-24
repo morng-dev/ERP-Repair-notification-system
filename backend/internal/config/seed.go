@@ -13,10 +13,10 @@ import (
 
 func SeedDatabase(db *gorm.DB, config *Config) error {
 	log.Println("start database seeding...")
-	seedRoles(db)
+	seedCategory(db)
 	seedPermission(db)
 	seedProfessions(db)
-	seedCategory(db)
+	seedRoles(db)
 	seedAdmin(db, config)
 	seedRolePermissions(db)
 	log.Println("seeding database success")
@@ -93,6 +93,22 @@ func seedPermission(db *gorm.DB) error {
 		{
 			Name:        "role:delete",
 			Description: "delete role !!!!",
+		},
+		{
+			Name:        "profession:create",
+			Description: "create profession !!!!",
+		},
+		{
+			Name:        "profession:read",
+			Description: "read profession !!!!",
+		},
+		{
+			Name:        "profession:update",
+			Description: "update profession !!!!",
+		},
+		{
+			Name:        "profession:delete",
+			Description: "delete profession !!!!",
 		},
 	}
 

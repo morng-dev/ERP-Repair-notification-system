@@ -10,4 +10,5 @@ import (
 type PermissionRedisRepo interface {
 	Get(ctx context.Context, userID uuid.UUID) ([]*entities.Permission, error)
 	Set(ctx context.Context, userID uuid.UUID, permissions []*entities.Permission) error
+	Delete(ctx context.Context, userID uuid.UUID) error
 }

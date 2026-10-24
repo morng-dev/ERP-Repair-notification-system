@@ -81,7 +81,7 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	role.Post("/", r.roleHandler.CreateRole)
 	//permissions
 	permission := api.Group("/permission", r.authMW.AuthRequire(), r.authMW.Rolerequire(RoleAdmin))
-	permission.Get("/", r.permissionsHandler.GetAllPermissions)
+	permission.Get("/", r.authMW.PermissionRequire(PermissionReadProfession), r.permissionsHandler.GetAllPermissions)
 	permission.Post("/", r.permissionsHandler.CreatePermission)
 	permission.Put("/", r.permissionsHandler.UpdatePermission)
 

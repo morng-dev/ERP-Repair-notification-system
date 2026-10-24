@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,9 +25,12 @@ func (r *Permissioncache) Set(ctx context.Context, userID uuid.UUID, permissions
 	key := "user:permissions:" + userID.String()
 	data, err := json.Marshal(permissions)
 	if err != nil {
+		log.Printf("Redis SET ERROR: %v", err)
 		return err
 	}
-	return r.client.Set(ctx, key, data, time.Hour).Err()
+
+	log.Printf("Redis SET SUCCESS: key=%s", key)
+	return r.client.Set(ctx, key, data, 5*time.Minute).Err()
 }
 
 func (r *Permissioncache) Get(ctx context.Context, userID uuid.UUID) ([]*entities.Permission, error) {
@@ -43,4 +47,9 @@ func (r *Permissioncache) Get(ctx context.Context, userID uuid.UUID) ([]*entitie
 		return nil, err
 	}
 	return permission, nil
+}
+
+func (r *Permissioncache) Delete(ctx context.Context, userID uuid.UUID) error {
+	key := "user:permissions:" + userID.String()
+	return r.client.Del(ctx, key).Err()
 }

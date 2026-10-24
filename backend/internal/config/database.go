@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/morng-dev/erp/internal/adapters/persistence/models"
 	"gorm.io/driver/postgres"
@@ -16,6 +17,17 @@ func Setupdatabase(config *Config) *gorm.DB {
 	db, err := gorm.Open(postgres.Open(dns), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect database:%s", err)
+	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("failed to get database connection pool: %s", err)
+	}
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetConnMaxLifetime(30 * time.Minute)
+	sqlDB.SetConnMaxIdleTime(5 * time.Minute)
+	if err := sqlDB.Ping(); err != nil {
+		log.Fatalf("failed to ping database: %s", err)
 	}
 	runAutoMigrate(db)
 	SeedDatabase(db, config)

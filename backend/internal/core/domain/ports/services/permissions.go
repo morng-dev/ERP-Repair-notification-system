@@ -9,7 +9,7 @@ import (
 
 type PermissionsService interface {
 	CreatePermissions(ctx context.Context, req *entities.Permission) error
-	GetAllPermissions(ctx context.Context, page, limit int) ([]*entities.Permission, *entities.PaginationResponse, error)
+	GetAllPermissions(ctx context.Context) ([]*entities.Permission, error)
 	UpdatePermissions(ctx context.Context, permissionID uuid.UUID, req *entities.PermissionUpdate) error
 	HasPermission(ctx context.Context, userID uuid.UUID, permission string) (bool, error)
 }

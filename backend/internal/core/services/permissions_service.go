@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"math"
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
@@ -44,19 +43,12 @@ func (s *PermissionsService) CreatePermissions(ctx context.Context, req *entitie
 	return nil
 }
 
-func (s *PermissionsService) GetAllPermissions(ctx context.Context, page, limit int) ([]*entities.Permission, *entities.PaginationResponse, error) {
-	permission, total, err := s.permissionsRepo.GetAll(ctx, page, limit)
+func (s *PermissionsService) GetAllPermissions(ctx context.Context) ([]*entities.Permission, error) {
+	permission, err := s.permissionsRepo.GetAll(ctx)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	pageTotal := int(math.Ceil(float64(page / limit)))
-	pagination := &entities.PaginationResponse{
-		Page:       page,
-		Limit:      limit,
-		TotalPages: pageTotal,
-		TotalItems: total,
-	}
-	return permission, pagination, nil
+	return permission, nil
 
 }
 func (s *PermissionsService) HasPermission(ctx context.Context, userID uuid.UUID, permission string) (bool, error) {
@@ -79,7 +71,7 @@ func (s *PermissionsService) HasPermission(ctx context.Context, userID uuid.UUID
 	}
 
 	for _, p := range permissions {
-		if p != nil && p.Name == permission {
+		if p.Name == permission {
 			return true, nil
 		}
 	}

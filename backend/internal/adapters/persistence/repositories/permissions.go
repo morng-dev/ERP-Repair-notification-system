@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/adapters/persistence/models"
@@ -38,24 +39,17 @@ func (r *PermissionsRepository) GetByID(ctx context.Context, id uuid.UUID) (*ent
 	return r.modelToEntity(&permission), nil
 }
 
-func (r *PermissionsRepository) GetAll(ctx context.Context, page, limit int) ([]*entities.Permission, int, error) {
+func (r *PermissionsRepository) GetAll(ctx context.Context) ([]*entities.Permission, error) {
 	var permissions []models.Permission
-	var total int64
-
-	offset := (page - 1) * limit
-
-	if err := r.db.WithContext(ctx).Model(&models.Permission{}).Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-	if err := r.db.WithContext(ctx).Offset(offset).Limit(limit).Find(&permissions).Error; err != nil {
-		return nil, 0, err
+	if err := r.db.WithContext(ctx).Find(&permissions).Error; err != nil {
+		return nil, err
 	}
 
 	var result []*entities.Permission
 	for _, permission := range permissions {
 		result = append(result, r.modelToEntity(&permission))
 	}
-	return result, int(total), nil
+	return result, nil
 }
 
 func (r *PermissionsRepository) GetByUserID(ctx context.Context, userID uuid.UUID) ([]*entities.Permission, error) {
@@ -69,6 +63,7 @@ func (r *PermissionsRepository) GetByUserID(ctx context.Context, userID uuid.UUI
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Permissions from DB: %d", len(permissionModel))
 
 	result := make([]*entities.Permission, 0, len(permissionModel))
 
