@@ -7,18 +7,19 @@ import (
 )
 
 type Asset struct {
-	ID         uuid.UUID     `json:"id"`
-	Name       string        `json:"name"`
-	CategoryID uuid.UUID     `json:"category_id"`
-	Category   *Category     `json:"category,omitempty"`
-	LocationID uuid.UUID     `json:"location_id"`
-	Location   *Location     `json:"location,omitempty"`
-	OwnerID    uuid.UUID     `json:"owner_id" validate:"required,uuid"`
-	Owner      *User         `json:"owner,omitempty"`
-	Image      string        `json:"image,omitempty"`
-	Images     []ImageAssets `json:"images,omitempty"`
-	CreatedAt  time.Time     `json:"created_at"`
-	UpdatedAt  time.Time     `json:"updated_at"`
+	ID          uuid.UUID     `json:"id"`
+	Name        string        `json:"name"`
+	Description string        `json:"description" validate:"required"`
+	CategoryID  uuid.UUID     `json:"category_id"`
+	Category    *Category     `json:"category,omitempty"`
+	LocationID  uuid.UUID     `json:"location_id"`
+	Location    *Location     `json:"location,omitempty"`
+	OwnerID     uuid.UUID     `json:"owner_id" validate:"required,uuid"`
+	Owner       *User         `json:"owner,omitempty"`
+	Image       string        `json:"image,omitempty"`
+	Images      []ImageAssets `json:"images,omitempty"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
 }
 
 type ImageAssets struct {

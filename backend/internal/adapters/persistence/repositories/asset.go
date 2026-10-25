@@ -59,31 +59,7 @@ func (r *assetsRepositories) GetByID(ctx context.Context, assetID uuid.UUID) (*e
 	if err := r.db.WithContext(ctx).Preload("Category").First(asset, "id = ?", assetID).Error; err != nil {
 		return nil, err
 	}
-	return r.modelsToEntities(&asset), nil
-}
-
-func (r *assetsRepositories) modelsToEntities(assetModel *models.Assets) *entities.Asset {
-	asset := &entities.Asset{
-		ID:         assetModel.ID,
-		Name:       assetModel.Name,
-		Image:      assetModel.Image,
-		CategoryID: assetModel.CategoryID,
-		LocationID: assetModel.LocationID,
-		OwnerID:    assetModel.OwnerID,
-		CreatedAt:  assetModel.CreatedAt,
-		UpdatedAt:  assetModel.UpdatedAt,
-	}
-	if assetModel.Category.ID != uuid.Nil && assetModel.Category != nil {
-		asset.Category = &entities.Category{
-			ID:          assetModel.Category.ID,
-			Name:        assetModel.Category.Name,
-			Description: assetModel.Category.Description,
-			Image:       assetModel.Category.Image,
-			CreatedAt:   assetModel.Category.CreatedAt,
-			UpdatedAt:   asset.Category.UpdatedAt,
-		}
-	}
-	return asset
+	return r.modelToEntity(&asset), nil
 }
 
 func (r *assetsRepositories) GetByAssetExist(ctx context.Context, name string) (bool, error) {
@@ -93,4 +69,78 @@ func (r *assetsRepositories) GetByAssetExist(ctx context.Context, name string) (
 		return false, err
 	}
 	return exists, nil
+}
+
+func (r *assetsRepositories) GetAll(ctx context.Context, page, limit int) ([]*entities.Asset, int, error) {
+	var assets []models.Assets
+	var total int64
+
+	offset := (page - 1) * limit
+	if err := r.db.WithContext(ctx).Model(&models.Assets{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := r.db.WithContext(ctx).Preload("Owner").Preload("Category").Preload("Location").Offset(offset).Limit(limit).Find(&assets).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var result []*entities.Asset
+	for _, asset := range assets {
+		result = append(result, r.modelToEntity(&asset))
+	}
+	return result, int(total), nil
+}
+func (r *assetsRepositories) GetByOwner(ctx context.Context, userID uuid.UUID, page, limit int) ([]*entities.Asset, int, error) {
+	var assets []models.Assets
+	var total int64
+
+	offset := (page - 1) * limit
+
+	if err := r.db.WithContext(ctx).Model(&models.Assets{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := r.db.WithContext(ctx).Offset(offset).Limit(limit).Where("OwnerID = ?", userID).Find(&assets).Error; err != nil {
+		return nil, 0, err
+	}
+	var result []*entities.Asset
+
+	for _, asset := range assets {
+		result = append(result, r.modelToEntity(&asset))
+	}
+
+	return result, int(total), nil
+}
+
+func (r *assetsRepositories) modelToEntity(assetModel *models.Assets) *entities.Asset {
+	asset := &entities.Asset{
+		Name:        assetModel.Name,
+		Description: assetModel.Description,
+		OwnerID:     assetModel.OwnerID,
+		Image:       assetModel.Image,
+	}
+	if assetModel.CategoryID != uuid.Nil && assetModel.Category != nil {
+		asset.Category = &entities.Category{
+			ID:          assetModel.Category.ID,
+			Name:        assetModel.Category.Name,
+			Description: assetModel.Category.Description,
+			Image:       assetModel.Category.Image,
+			CreatedAt:   assetModel.Category.CreatedAt,
+			UpdatedAt:   assetModel.Category.UpdatedAt,
+		}
+	}
+
+	if assetModel.LocationID != uuid.Nil && assetModel.Location != nil {
+		asset.Location = &entities.Location{
+			ID:          assetModel.Location.ID,
+			Description: assetModel.Location.Description,
+			Address:     assetModel.Location.Address,
+			City:        assetModel.Location.City,
+			State:       assetModel.Location.State,
+			Latitude:    assetModel.Location.Latitude,
+			Longitude:   assetModel.Location.Longitude,
+			CreatedAt:   assetModel.Location.CreatedAt,
+			UpdatedAt:   assetModel.Location.UpdatedAt,
+		}
+	}
+
+	return asset
 }

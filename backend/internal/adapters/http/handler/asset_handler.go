@@ -76,3 +76,28 @@ func (h *AssetHandler) CreateAsset(c *fiber.Ctx) error {
 		Message: "created success",
 	})
 }
+
+func (h *AssetHandler) GetAssetsAll(c *fiber.Ctx) error {
+	page := c.QueryInt("page", 1)
+	limit := c.QueryInt("limit", 10)
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+	asset, pagination, err := h.assetService.GetAssetsAll(c.Context(), page, limit)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(entities.ErrorResponse{
+			Success: false,
+			Message: "can not read user error",
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
+		Success:    true,
+		Message:    "success",
+		Data:       asset,
+		Pagination: pagination,
+	})
+}

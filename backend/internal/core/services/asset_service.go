@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"math"
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
@@ -89,4 +90,37 @@ func (s *AssetService) GetAssetByID(ctx context.Context, assetID uuid.UUID) (*en
 		}
 	}
 	return asset, nil
+}
+
+func (s *AssetService) GetAssetsAll(ctx context.Context, page, limit int) ([]*entities.Asset, *entities.PaginationResponse, error) {
+
+	assets, totalitem, err := s.assetRepo.GetAll(ctx, page, limit)
+	if err != nil {
+		return nil, nil, err
+	}
+	totalPage := int(math.Ceil(float64(page) / float64(limit)))
+	pagination := &entities.PaginationResponse{
+		Page:       page,
+		Limit:      limit,
+		TotalItems: totalitem,
+		TotalPages: totalPage,
+	}
+	return assets, pagination, nil
+}
+
+func (s *AssetService) GetAssetByOwner(ctx context.Context, userID uuid.UUID, page, limit int) ([]*entities.Asset, *entities.PaginationResponse, error) {
+	assets, total, err := s.assetRepo.GetByOwner(ctx, userID, page, limit)
+	if err != nil {
+		return nil, nil, err
+	}
+	totalPage := int(math.Ceil(float64(page) / float64(limit)))
+
+	pagination := &entities.PaginationResponse{
+		Page:       page,
+		Limit:      limit,
+		TotalItems: total,
+		TotalPages: totalPage,
+	}
+	return assets, pagination, nil
+
 }

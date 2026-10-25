@@ -47,6 +47,14 @@ const (
 	PermissionUpdateProfession = "profession:update"
 	PermissionDeleteProfession = "profession:delete"
 )
+
+const (
+	PermissionCreateAsset = "Asset:create"
+	PermissionReadAsset   = "Asset:read"
+	PermissionUpdateAsset = "Asset:update"
+	PermissionDeleteAsset = "Asset:delete"
+)
+
 const (
 	Ratelimitlogin          = "login"
 	RatelimitRegister       = "register"
@@ -85,6 +93,7 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	permission.Post("/", r.permissionsHandler.CreatePermission)
 	permission.Put("/", r.permissionsHandler.UpdatePermission)
 
-	asset := api.Group("/asset")
-	asset.Post("/", r.authMW.AuthRequire(), r.assetHandler.CreateAsset)
+	asset := api.Group("/asset", r.authMW.AuthRequire())
+	asset.Get("/", r.assetHandler.GetAssetsAll, r.authMW.PermissionRequire(PermissionReadAsset))
+	asset.Post("/", r.assetHandler.CreateAsset)
 }
