@@ -28,17 +28,17 @@ func (s *RoleService) CreateRole(ctx context.Context, req *entities.CreateRoleRe
 	if err != nil {
 		return err
 	}
-	role := &entities.Role{
-		ID:          id,
-		Name:        req.Name,
-		Description: req.Description,
-	}
 	exists, err := s.roleRepo.GetByNameExist(ctx, req.Name)
 	if err != nil {
 		return err
 	}
 	if !exists {
 		return errors.New("Role already exists")
+	}
+	role := &entities.Role{
+		ID:          id,
+		Name:        req.Name,
+		Description: req.Description,
 	}
 	if err := s.roleRepo.Create(ctx, role); err != nil {
 		return err

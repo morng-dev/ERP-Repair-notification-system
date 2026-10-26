@@ -3,17 +3,14 @@ services:
   # =========================================================
   # Go API
   # =========================================================
-
-  api:
+  api-1:
     build: .
-
-    expose:
-      - "8080"
+    ports:
+      - "3001:8080"
     environment:
       NODE_ID: api-1
       APP_ENV: development
       APP_PORT: 8080
-      APP_URL: http://localhost:8080
 
       DB_HOST: database
       DB_PORT: 5432
@@ -22,31 +19,55 @@ services:
       DB_NAME: erp_repair_db
       DB_SSL: disable
 
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASS: ""
-      REDIS_DB: 0
-
       JWT_SECRET: change-me
       JWT_EXPIRES_IN: 24h
+
+      KAFKA_BROKERS: broker-1:19092,broker-2:19092,broker-3:19092
+
     env_file:
       - .env
 
     depends_on:
       database:
         condition: service_healthy
-      redis:
-        condition: service_healthy
 
     networks:
       - default
       - kafka-network
 
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
+    restart: unless-stopped
+
+  api-2:
+    build: .
+    ports:
+      - "3002:8080"
+    environment:
+      NODE_ID: api-2
+      APP_ENV: development
+      APP_PORT: 8080
+
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: admin
+      DB_NAME: erp_repair_db
+      DB_SSL: disable
+
+      JWT_SECRET: change-me
+      JWT_EXPIRES_IN: 24h
+
+      KAFKA_BROKERS: broker-1:19092,broker-2:19092,broker-3:19092
+
+    env_file:
+      - .env
+
+    depends_on:
+      database:
+        condition: service_healthy
+
+    networks:
+      - default
+      - kafka-network
 
     restart: unless-stopped
 
@@ -62,7 +83,7 @@ services:
     command: redis-server --appendonly yes
 
     ports:
-      - "6379:6379"
+      - "6377:6379"
 
     volumes:
       - redis_data:/data

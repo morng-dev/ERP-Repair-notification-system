@@ -14,3 +14,9 @@ type Category struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
+
+type CategoryCreate struct {
+	Name        string `json:"name"`
+	Description string `json:"Description"`
+	Image       string `json:"image"`
+}
