@@ -94,15 +94,15 @@ func (s *AssetService) GetAssetByID(ctx context.Context, assetID uuid.UUID) (*en
 
 func (s *AssetService) GetAssetsAll(ctx context.Context, page, limit int) ([]*entities.Asset, *entities.PaginationResponse, error) {
 
-	assets, totalitem, err := s.assetRepo.GetAll(ctx, page, limit)
+	assets, total, err := s.assetRepo.GetAll(ctx, page, limit)
 	if err != nil {
 		return nil, nil, err
 	}
-	totalPage := int(math.Ceil(float64(totalitem) / float64(limit)))
+	totalPage := int(math.Ceil(float64(total) / float64(limit)))
 	pagination := &entities.PaginationResponse{
 		Page:       page,
 		Limit:      limit,
-		TotalItems: totalitem,
+		TotalItems: total,
 		TotalPages: totalPage,
 	}
 	return assets, pagination, nil
