@@ -98,7 +98,7 @@ func (s *AssetService) GetAssetsAll(ctx context.Context, page, limit int) ([]*en
 	if err != nil {
 		return nil, nil, err
 	}
-	totalPage := int(math.Ceil(float64(page) / float64(limit)))
+	totalPage := int(math.Ceil(float64(totalitem) / float64(limit)))
 	pagination := &entities.PaginationResponse{
 		Page:       page,
 		Limit:      limit,
