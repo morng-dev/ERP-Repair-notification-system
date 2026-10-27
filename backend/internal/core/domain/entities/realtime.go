@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/websocket/v2"
 )
 
-type Notifications struct {
+type NotificationHub struct {
 	userID string
 	conn   websocket.Conn
 	Send   chan interface{}
