@@ -31,7 +31,7 @@ func (p *NotificationProducer) Publish(ctx context.Context, notif *entities.Noti
 		return err
 	}
 	event := &entities.Event{
-		Type: "notification-topic",
+		Type: "notification",
 		Data: dataByte,
 	}
 	eventByte, err := json.Marshal(event)
@@ -39,7 +39,7 @@ func (p *NotificationProducer) Publish(ctx context.Context, notif *entities.Noti
 		return err
 	}
 	kafkaMsg := kafka.Message{
-		Topic: "notification",
+		Topic: "notification-topic",
 		Value: eventByte,
 		Key:   []byte(key),
 	}
@@ -47,4 +47,8 @@ func (p *NotificationProducer) Publish(ctx context.Context, notif *entities.Noti
 		return err
 	}
 	return nil
+}
+
+func (p *NotificationProducer) Close() error {
+	return p.writer.Close()
 }

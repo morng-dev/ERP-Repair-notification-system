@@ -15,7 +15,7 @@ import (
 	"github.com/morng-dev/erp/internal/adapters/http/handler"
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
 	"github.com/morng-dev/erp/internal/adapters/http/routes"
-	"github.com/morng-dev/erp/internal/adapters/kafka"
+	"github.com/morng-dev/erp/internal/adapters/kafka/consumer"
 	mail "github.com/morng-dev/erp/internal/adapters/mailer"
 	"github.com/morng-dev/erp/internal/adapters/persistence/kafkarepo"
 	"github.com/morng-dev/erp/internal/adapters/persistence/redis"
@@ -46,15 +46,17 @@ func main() {
 	//kafkaRepo
 	notifRepo := kafkarepo.NewNotificationsRepository(db)
 	notifkafkaService := kafkaservice.NewNotificationsKafkaService(notifRepo)
+	//kafka
+	notifiConsumer := consumer.NewNotificationConsumer(cfg.KafkaBrokers, cfg.NodeID, notifkafkaService)
 	//queue
-	nm, err := kafka.NewNotificationManager(
-		cfg.KafkaBrokers,
-		cfg.NodeID,
-		notifkafkaService,
-	)
-	if err != nil {
-		log.Fatalf("failed to initialize notification manager: %v", err)
-	}
+	// nm, err := kafka.NewNotificationManager(
+	// 	cfg.KafkaBrokers,
+	// 	cfg.NodeID,
+	// 	notifkafkaService,
+	// )
+	// if err != nil {
+	// 	log.Fatalf("failed to initialize notification manager: %v", err)
+	// }
 
 	//serivce
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
@@ -96,8 +98,8 @@ func main() {
 			})
 		},
 	})
-	app.Use(logger.New())
 	app.Use(recover.New())
+	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
@@ -124,30 +126,11 @@ func main() {
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-sigchan
+		notifiConsumer.Close()
 		log.Println("shutting down graacfully...")
-		nm.Close()
+		// nm.Close()
 		app.ShutdownWithTimeout(15 * time.Second)
 	}()
-	// userID := uuid.MustParse("007fb7e0-dc09-4f4c-87db-215e2bba9a33")
-	// go func() {
-	// 	for i := 0; i < 10; i++ {
-	// 		err = nm.PublishNotification(&entities.Notification{
-	// 			UserID:  userID,
-	// 			Content: "ทดสอบ Kafka" + strconv.Itoa(i),
-	// 			Type:    "info",
-	// 			Status:  "unread",
-	// 		})
-
-	// 		if err != nil {
-	// 			log.Printf("publish failed: %v", err)
-	// 		} else {
-	// 			log.Printf("published message %d", i+1)
-	// 		}
-
-	// 		time.Sleep(100 * time.Millisecond)
-	// 	}
-	// }()
-	//start server
 	log.Printf("Server starting on port %s", cfg.APPPORT)
 	log.Fatal(app.Listen(":" + cfg.APPPORT))
 }
