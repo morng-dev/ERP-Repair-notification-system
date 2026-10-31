@@ -8,18 +8,19 @@ import (
 	"time"
 
 	"github.com/morng-dev/erp/internal/core/domain/entities"
-	kafkaservice "github.com/morng-dev/erp/internal/core/domain/ports/kafkaService"
+	"github.com/morng-dev/erp/internal/core/domain/ports/kafkaService/kafkahandler"
+
 	"github.com/segmentio/kafka-go"
 )
 
 type NotificationConsumer struct {
 	reader  *kafka.Reader
-	handler kafkaservice.NotificationService
+	handler kafkahandler.NotificationHandler
 	ctx     context.Context
 	cancel  context.CancelFunc
 }
 
-func NewNotificationConsumer(kafkaAddr []string, nodeID string, handler kafkaservice.NotificationService) *NotificationConsumer {
+func NewNotificationConsumer(kafkaAddr []string, nodeID string, handler kafkahandler.NotificationHandler) *NotificationConsumer {
 	ctx, cancel := context.WithCancel(context.Background())
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:           kafkaAddr,
@@ -65,7 +66,7 @@ func (c *NotificationConsumer) Listen() {
 				log.Printf("Error unmarshalling notification")
 				continue
 			}
-			if err := c.handler.DeliverNotification(c.ctx, &notification); err != nil {
+			if err := c.handler.HandleNotification(c.ctx, &notification); err != nil {
 				log.Printf("failed to deliver notification: %v", err)
 			}
 		}

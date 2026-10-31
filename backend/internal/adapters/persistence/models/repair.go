@@ -8,7 +8,8 @@ import (
 )
 
 type Repair struct {
-	ID      uuid.UUID `gorm:"type:uuid;primary_key" json:"id"`
+	ID uuid.UUID `gorm:"type:uuid;primary_key" json:"id"`
+
 	AssetID uuid.UUID `json:"asset_id"`
 	Asset   *Assets   `gorm:"foreignKey:AssetID" json:"asset,omitempty"`
 

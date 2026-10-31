@@ -9,6 +9,7 @@ import (
 
 type Notification struct {
 	ID        uuid.UUID      `gorm:"type:uuid" json:"id"`
+	Title     string         `gorm:"type:varchar(100)"json:"title"`
 	UserID    uuid.UUID      `gorm:"type:uuid;index;not null" json:"user_id"`
 	User      *User          `gorm:"foreignKey:UserID" json:"user"`
 	Message   string         `gorm:"type:varchar(255)" json:"message"`

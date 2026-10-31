@@ -6,12 +6,16 @@ import (
 	"time"
 
 	"github.com/morng-dev/erp/internal/core/domain/entities"
+	"github.com/morng-dev/erp/internal/core/domain/ports/kafkaService/kafkaproducer"
+
 	"github.com/segmentio/kafka-go"
 )
 
 type NotificationProducer struct {
 	writer *kafka.Writer
 }
+
+var _ kafkaproducer.NotificationKafkaService = (*NotificationProducer)(nil)
 
 func NewNotificationProducer(Addrkafka ...string) *NotificationProducer {
 	writer := &kafka.Writer{

@@ -27,7 +27,12 @@ func (r *RepairRepository) Create(ctx context.Context, req *entities.Repair) err
 		Status:     req.Status,
 		Priority:   req.Priority,
 	}
-	return r.db.WithContext(ctx).Create(repairModel).Error
+	if err := r.db.WithContext(ctx).Create(repairModel).Error; err != nil {
+		return err
+	}
+	req.CreatedAt = repairModel.CreatedAt
+	req.UpdatedAt = repairModel.UpdatedAt
+	return nil
 }
 
 func (r *RepairRepository) GetByID(ctx context.Context, repairID uuid.UUID) (*entities.Repair, error) {
@@ -37,8 +42,12 @@ func (r *RepairRepository) GetByID(ctx context.Context, repairID uuid.UUID) (*en
 		Preload("Asset").
 		Preload("Asset.Category").
 		Preload("Asset.Location").
-		Preload("Asset.Owner").
-		Preload("Asset.Images").
+		Preload("Asset.Owner", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id", "email")
+		}).
+		Preload("Asset.Images", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id", "assets_id", "image_url")
+		}).
 		First(&repair, "id = ?", repairID).
 		Error
 	if err != nil {

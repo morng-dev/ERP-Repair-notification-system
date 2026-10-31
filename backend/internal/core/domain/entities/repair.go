@@ -8,6 +8,7 @@ import (
 
 type Repair struct {
 	ID         uuid.UUID `json:"id"`
+	Title      string    `json:"title"`
 	AssetID    uuid.UUID `json:"asset_id"`
 	Asset      *Asset    `json:"asset"`
 	ReportedBy uuid.UUID `json:"report_by"`
@@ -31,4 +32,11 @@ type RepairLogs struct {
 	Timestamp    time.Time `json:"timestamp"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
+}
+
+type RepairRequest struct {
+	ID         uuid.UUID `json:"id"`
+	AssetID    uuid.UUID `json:"asset_id"`
+	ReportedBy uuid.UUID `json:"report_by"`
+	AssignedTo uuid.UUID `json:"assigned_to"`
 }

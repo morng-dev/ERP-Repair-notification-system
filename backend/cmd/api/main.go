@@ -16,8 +16,8 @@ import (
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
 	"github.com/morng-dev/erp/internal/adapters/http/routes"
 	"github.com/morng-dev/erp/internal/adapters/kafka/consumer"
+	"github.com/morng-dev/erp/internal/adapters/kafka/producer"
 	mail "github.com/morng-dev/erp/internal/adapters/mailer"
-	"github.com/morng-dev/erp/internal/adapters/persistence/kafkarepo"
 	"github.com/morng-dev/erp/internal/adapters/persistence/redis"
 	"github.com/morng-dev/erp/internal/adapters/persistence/repositories"
 	"github.com/morng-dev/erp/internal/config"
@@ -43,11 +43,15 @@ func main() {
 	permissionRepo := repositories.NewPermissionsRepository(db)
 	assetRepo := repositories.NewAssetsRepositories(db)
 	locationsRepo := repositories.NewLocationsRepository(db)
+	notifRepo := repositories.NewNotificationsRepository(db)
+	repairRepo := repositories.NewRepairRepository(db)
 	//kafkaRepo
-	notifRepo := kafkarepo.NewNotificationsRepository(db)
-	notifkafkaService := kafkaservice.NewNotificationsKafkaService(notifRepo)
-	//kafka
+	notifkafkaService := kafkaservice.NewNotificationHandler(notifRepo)
+	//kafka consumer
 	notifiConsumer := consumer.NewNotificationConsumer(cfg.KafkaBrokers, cfg.NodeID, notifkafkaService)
+	go notifiConsumer.Listen()
+	//kafka producer
+	notifiProducer := producer.NewNotificationProducer(cfg.KafkaBrokers...)
 	//queue
 	// nm, err := kafka.NewNotificationManager(
 	// 	cfg.KafkaBrokers,
@@ -57,7 +61,6 @@ func main() {
 	// if err != nil {
 	// 	log.Fatalf("failed to initialize notification manager: %v", err)
 	// }
-
 	//serivce
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
 	userService := services.NewUserService(userRepo, userRedisRepo)
@@ -65,6 +68,7 @@ func main() {
 	permissionService := services.NewPermissionsService(permissionRepo, PermissionRedisRepo)
 	assetService := services.NewAssetsService(assetRepo, locationsRepo)
 	roleService := services.NewRoleService(roleRepo, permissionRepo)
+	notifService := services.NewRepairService(repairRepo, notifiProducer)
 	//middle ware
 	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis, permissionService)
 	ratelimitMW := middleware.NewRatelimitMW(clientRedis)
@@ -75,6 +79,7 @@ func main() {
 	permissionHandler := handler.NewPermissionHandler(permissionService)
 	assetHandler := handler.NewAssetsHandler(assetService)
 	roleHandler := handler.NewRoleHandler(roleService)
+	repairHandler := handler.NewRepairHandler(notifService)
 
 	app := fiber.New(fiber.Config{
 		ProxyHeader:             fiber.HeaderXForwardedFor,
