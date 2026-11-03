@@ -6,18 +6,18 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/morng-dev/erp/internal/adapters/kafka/producer"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
+	"github.com/morng-dev/erp/internal/core/domain/ports/kafkaService/kafkaproducer"
 	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
 	"github.com/morng-dev/erp/internal/core/domain/ports/services"
 )
 
 type RepairService struct {
 	repairRepo repositories.RepairRepository
-	publisher  *producer.NotificationProducer
+	publisher  kafkaproducer.NotificationKafkaService
 }
 
-func NewRepairService(repairRepo repositories.RepairRepository, publisher *producer.NotificationProducer) services.RepairService {
+func NewRepairService(repairRepo repositories.RepairRepository, publisher kafkaproducer.NotificationKafkaService) services.RepairService {
 	return &RepairService{
 		repairRepo: repairRepo,
 		publisher:  publisher,
@@ -32,8 +32,10 @@ func (s *RepairService) CreateRepair(ctx context.Context, req *entities.RepairRe
 
 	repair := &entities.Repair{
 		ID:         id,
+		Title:      req.Title,
 		AssetID:    req.AssetID,
 		ReportedBy: req.ReportedBy,
+		AssignedTo: req.AssignedTo,
 		Status:     "pending",
 		Priority:   "normal",
 	}

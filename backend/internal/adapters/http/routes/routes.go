@@ -17,6 +17,7 @@ type Routes struct {
 	permissionsHandler *handler.PermissionHandler
 	assetHandler       *handler.AssetHandler
 	roleHandler        *handler.RoleHandler
+	repairHandler      *handler.RepairHandler
 }
 
 func NewRoutes(
@@ -28,6 +29,7 @@ func NewRoutes(
 	permissionsHandler *handler.PermissionHandler,
 	assetHandler *handler.AssetHandler,
 	roleHandler *handler.RoleHandler,
+	repairHandler *handler.RepairHandler,
 
 ) *Routes {
 	return &Routes{
@@ -38,6 +40,7 @@ func NewRoutes(
 		assetHandler:       assetHandler,
 		ratelimitMW:        ratelimitMW,
 		roleHandler:        roleHandler,
+		repairHandler:      repairHandler,
 	}
 }
 
@@ -96,4 +99,7 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	asset := api.Group("/asset", r.authMW.AuthRequire())
 	asset.Get("/", r.assetHandler.GetAssetsAll, r.authMW.PermissionRequire(PermissionReadAsset))
 	asset.Post("/", r.assetHandler.CreateAsset)
+
+	repair := api.Group("/repair", r.authMW.AuthRequire())
+	repair.Post("/", r.repairHandler.CreateRepair)
 }

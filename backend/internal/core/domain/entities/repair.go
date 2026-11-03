@@ -36,6 +36,7 @@ type RepairLogs struct {
 
 type RepairRequest struct {
 	ID         uuid.UUID `json:"id"`
+	Title      string    `json:"title"`
 	AssetID    uuid.UUID `json:"asset_id"`
 	ReportedBy uuid.UUID `json:"report_by"`
 	AssignedTo uuid.UUID `json:"assigned_to"`

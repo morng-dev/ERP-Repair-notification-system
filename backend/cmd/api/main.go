@@ -47,11 +47,11 @@ func main() {
 	repairRepo := repositories.NewRepairRepository(db)
 	//kafkaRepo
 	notifkafkaService := kafkaservice.NewNotificationHandler(notifRepo)
+	//kafka producer
+	notifiProducer := producer.NewNotificationProducer(cfg.KafkaBrokers...)
 	//kafka consumer
 	notifiConsumer := consumer.NewNotificationConsumer(cfg.KafkaBrokers, cfg.NodeID, notifkafkaService)
 	go notifiConsumer.Listen()
-	//kafka producer
-	notifiProducer := producer.NewNotificationProducer(cfg.KafkaBrokers...)
 	//queue
 	// nm, err := kafka.NewNotificationManager(
 	// 	cfg.KafkaBrokers,
@@ -68,7 +68,7 @@ func main() {
 	permissionService := services.NewPermissionsService(permissionRepo, PermissionRedisRepo)
 	assetService := services.NewAssetsService(assetRepo, locationsRepo)
 	roleService := services.NewRoleService(roleRepo, permissionRepo)
-	notifService := services.NewRepairService(repairRepo, notifiProducer)
+	repairService := services.NewRepairService(repairRepo, notifiProducer)
 	//middle ware
 	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis, permissionService)
 	ratelimitMW := middleware.NewRatelimitMW(clientRedis)
@@ -79,7 +79,7 @@ func main() {
 	permissionHandler := handler.NewPermissionHandler(permissionService)
 	assetHandler := handler.NewAssetsHandler(assetService)
 	roleHandler := handler.NewRoleHandler(roleService)
-	repairHandler := handler.NewRepairHandler(notifService)
+	repairHandler := handler.NewRepairHandler(repairService)
 
 	app := fiber.New(fiber.Config{
 		ProxyHeader:             fiber.HeaderXForwardedFor,
@@ -124,6 +124,7 @@ func main() {
 		permissionHandler,
 		assetHandler,
 		roleHandler,
+		repairHandler,
 	)
 	routes.SetUpRoute(app)
 
