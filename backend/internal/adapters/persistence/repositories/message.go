@@ -27,7 +27,7 @@ func (r *MessageRepository) Create(ctx context.Context, message *entities.Messag
 		Conteant:   message.Conteant,
 		TimeStamp:  time.Now().Unix(),
 	}
-	if err := r.db.WithContext(ctx).Create(&msg).Error; err != nil {
+	if err := r.db.WithContext(ctx).Create(msg).Error; err != nil {
 		return err
 	}
 	return nil
@@ -41,12 +41,17 @@ func (r *MessageRepository) GetByID(ctx context.Context, messageID uuid.UUID) (*
 	return r.modelsToEntities(&msg), nil
 }
 
-func (r *MessageRepository) GetByChanel(ctx context.Context, chanalID uuid.UUID) (*entities.Message, error) {
-	var msgChanel models.Message
-	if err := r.db.WithContext(ctx).Where("ChanalID = ?", chanalID).First(&msgChanel).Error; err != nil {
+func (r *MessageRepository) GetByChanel(ctx context.Context, chanalID uuid.UUID) ([]*entities.Message, error) {
+	var msgChanel []models.Message
+	if err := r.db.WithContext(ctx).Where("ChanalID = ?", chanalID).Order("time_stamp ASC").Find(&msgChanel).Error; err != nil {
 		return nil, err
 	}
-	return r.modelsToEntities(&msgChanel), nil
+	var result []*entities.Message
+	for _, msg := range msgChanel {
+		result = append(result, r.modelsToEntities(&msg))
+	}
+
+	return result, nil
 }
 
 func (r *MessageRepository) Delete(ctx context.Context, messageID uuid.UUID) error {
