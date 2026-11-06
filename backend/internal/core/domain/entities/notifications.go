@@ -7,14 +7,15 @@ import (
 )
 
 type Notification struct {
-	ID        uuid.UUID `json:"id"`
-	Title     string    `json:"title"`
-	UserID    uuid.UUID `json:"user_id"`
-	User      *User     `json:"user"`
-	Content   string    `json:"content"`
-	Type      string    `json:"type"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
+	ID          uuid.UUID `json:"id"`
+	Title       string    `json:"title"`
+	ReferenceID uuid.UUID `json:"reference_id"`
+	UserID      uuid.UUID `json:"user_id"`
+	User        *User     `json:"user"`
+	Content     string    `json:"content"`
+	Type        string    `json:"type"`
+	Status      string    `json:"status"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type UpdateStatusNotif struct {

@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/morng-dev/erp/internal/adapters/kafka/retry"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/kafkaService/kafkahandler"
 
@@ -28,7 +29,6 @@ func NewNotificationConsumer(kafkaAddr []string, nodeID string, handler kafkahan
 		GroupID:           "notification-group-" + nodeID,
 		MaxBytes:          10e6,
 		HeartbeatInterval: time.Second,
-		CommitInterval:    time.Second,
 	})
 	nc := &NotificationConsumer{
 		reader:  reader,
@@ -46,7 +46,7 @@ func (c *NotificationConsumer) Listen() {
 			return
 		default:
 		}
-		kafkaMsg, err := c.reader.ReadMessage(c.ctx)
+		kafkaMsg, err := c.reader.FetchMessage(c.ctx)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
 				return
@@ -60,15 +60,33 @@ func (c *NotificationConsumer) Listen() {
 			log.Printf("Error unmarshaling event : %v", err)
 			continue
 		}
-		if event.Type == "notification" {
-			var notification entities.Notification
-			if err := json.Unmarshal(event.Data, &notification); err != nil {
-				log.Printf("Error unmarshalling notification")
-				continue
-			}
-			if err := c.handler.HandleNotification(c.ctx, &notification); err != nil {
-				log.Printf("failed to deliver notification: %v", err)
-			}
+		if event.Type != "notification" {
+			log.Printf("unknown event type: %s", event.Type)
+			return
+		}
+		var notification entities.Notification
+		if err := json.Unmarshal(event.Data, &notification); err != nil {
+			log.Printf("Error unmarshalling notification")
+			continue
+		}
+		err = retry.Do(c.ctx, retry.Config{
+			MaxRetries:   10,
+			InitialDelay: 1 * time.Second,
+			MaxDelay:     20 * time.Second,
+		}, func() error {
+			return c.handler.HandleNotification(
+				c.ctx,
+				&notification,
+			)
+
+		})
+		if err != nil {
+			log.Printf("failed to deliver notification after retries: %v", err)
+			return
+		}
+		if err := c.reader.CommitMessages(c.ctx, kafkaMsg); err != nil {
+			log.Printf("failed to commit kafka message: %v", err)
+			return
 		}
 	}
 }

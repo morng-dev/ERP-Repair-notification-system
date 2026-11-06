@@ -8,6 +8,7 @@ import (
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type NotificationsRepository struct {
@@ -20,12 +21,24 @@ func NewNotificationsRepository(db *gorm.DB) repositories.NotificationsRepositor
 
 func (r *NotificationsRepository) Create(ctx context.Context, notification *entities.Notification) error {
 	notif := models.Notification{
-		UserID:  notification.UserID,
-		Message: notification.Content,
-		Type:    notification.Type,
-		Status:  notification.Status,
+		ID:          notification.ID,
+		Title:       notification.Title,
+		ReferenceID: notification.ReferenceID,
+		UserID:      notification.UserID,
+		Message:     notification.Content,
+		Type:        notification.Type,
+		Status:      notification.Status,
 	}
-	return r.db.WithContext(ctx).Create(&notif).Error
+	return r.db.WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: "user_id"},
+				{Name: "reference_id"},
+				{Name: "type"},
+			},
+			DoNothing: true,
+		}).
+		Create(&notif).Error
 }
 
 func (r *NotificationsRepository) UpdateStatus(ctx context.Context, notifID uuid.UUID, status *entities.UpdateStatusNotif) error {
@@ -33,30 +46,34 @@ func (r *NotificationsRepository) UpdateStatus(ctx context.Context, notifID uuid
 }
 func (r *NotificationsRepository) GetByUser(ctx context.Context, userID uuid.UUID) (*entities.Notification, error) {
 	var notif models.Notification
-	if err := r.db.WithContext(ctx).First(notif, "user_id = ?", userID).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&notif, "user_id = ?", userID).Error; err != nil {
 		return nil, err
 	}
 	return &entities.Notification{
-		ID:        notif.ID,
-		UserID:    notif.UserID,
-		Content:   notif.Message,
-		Type:      notif.Type,
-		Status:    notif.Status,
-		CreatedAt: notif.CreatedAt,
+		ID:          notif.ID,
+		Title:       notif.Title,
+		ReferenceID: notif.ReferenceID,
+		UserID:      notif.UserID,
+		Content:     notif.Message,
+		Type:        notif.Type,
+		Status:      notif.Status,
+		CreatedAt:   notif.CreatedAt,
 	}, nil
 }
 func (r *NotificationsRepository) GetByID(ctx context.Context, notifID uuid.UUID) (*entities.Notification, error) {
 	var notif models.Notification
-	if err := r.db.WithContext(ctx).First(notif, "id = ?", notifID).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&notif, "id = ?", notifID).Error; err != nil {
 		return nil, err
 	}
 	return &entities.Notification{
-		ID:        notif.ID,
-		UserID:    notif.UserID,
-		Content:   notif.Message,
-		Type:      notif.Type,
-		Status:    notif.Status,
-		CreatedAt: notif.CreatedAt,
+		ID:          notif.ID,
+		Title:       notif.Title,
+		ReferenceID: notif.ReferenceID,
+		UserID:      notif.UserID,
+		Content:     notif.Message,
+		Type:        notif.Type,
+		Status:      notif.Status,
+		CreatedAt:   notif.CreatedAt,
 	}, nil
 }
 func (r *NotificationsRepository) Delete(ctx context.Context, notifID uuid.UUID) error {

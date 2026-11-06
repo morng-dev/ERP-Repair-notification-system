@@ -43,12 +43,12 @@ func (s *RepairService) CreateRepair(ctx context.Context, req *entities.RepairRe
 		return err
 	}
 
-	s.notify(ctx, req.ReportedBy, "repair", "รับเรื่องแจ้งซ่อมแล้ว", "ระบบบันทึกคำขอแจ้งซ่อมของคุณเรียบร้อย รอเจ้าหน้าที่ดำเนินการ")
+	s.notify(ctx, repair.ReportedBy, repair.ID, "repair", "รับเรื่องแจ้งซ่อมแล้ว", "ระบบบันทึกคำขอแจ้งซ่อมของคุณเรียบร้อย รอเจ้าหน้าที่ดำเนินการ")
 
 	return nil
 }
 
-func (s *RepairService) notify(ctx context.Context, userID uuid.UUID, typ, title, content string) {
+func (s *RepairService) notify(ctx context.Context, userID uuid.UUID, repairID uuid.UUID, typ, title, content string) {
 	id, err := uuid.NewV7()
 	if err != nil {
 		log.Printf("notify: gen id: %v", err)
@@ -56,13 +56,14 @@ func (s *RepairService) notify(ctx context.Context, userID uuid.UUID, typ, title
 	}
 
 	notif := &entities.Notification{
-		ID:        id,
-		Title:     title,
-		UserID:    userID,
-		Type:      typ,
-		Content:   content,
-		Status:    "unread",
-		CreatedAt: time.Now().UTC(),
+		ID:          id,
+		Title:       title,
+		ReferenceID: repairID,
+		UserID:      userID,
+		Type:        typ,
+		Content:     content,
+		Status:      "unread",
+		CreatedAt:   time.Now().UTC(),
 	}
 	if err := s.publisher.Publish(ctx, notif); err != nil {
 		log.Printf("publish notification failed (user=%s): %v", userID, err)
