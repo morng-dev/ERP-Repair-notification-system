@@ -72,7 +72,7 @@ func (c *NotificationConsumer) Listen() {
 		err = retry.Do(c.ctx, retry.Config{
 			MaxRetries:   10,
 			InitialDelay: 1 * time.Second,
-			MaxDelay:     20 * time.Second,
+			MaxDelay:     1 * time.Second,
 		}, func() error {
 			return c.handler.HandleNotification(
 				c.ctx,
