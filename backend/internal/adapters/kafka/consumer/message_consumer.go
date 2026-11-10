@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/morng-dev/erp/internal/adapters/kafka/retry"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/kafkaService/kafkahandler"
 	"github.com/segmentio/kafka-go"
@@ -22,11 +23,10 @@ type MessageConsumer struct {
 func NewMessageConsumer(kafkaAddr []string, nodeID string, handler kafkahandler.MessageHandler) *MessageConsumer {
 	ctx, cancel := context.WithCancel(context.Background())
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        kafkaAddr,
-		GroupID:        "message-group-" + nodeID,
-		Topic:          "notification-topic",
-		MaxBytes:       10e6,
-		CommitInterval: time.Second,
+		Brokers:  kafkaAddr,
+		GroupID:  "message-group-" + nodeID,
+		Topic:    "notification-topic",
+		MaxBytes: 10e6,
 	})
 	mc := &MessageConsumer{
 		reader:  reader,
@@ -45,7 +45,7 @@ func (c *MessageConsumer) Listen() {
 			return
 		default:
 		}
-		msg, err := c.reader.ReadMessage(c.ctx)
+		KafkaMsg, err := c.reader.FetchMessage(c.ctx)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
 				return
@@ -55,19 +55,32 @@ func (c *MessageConsumer) Listen() {
 			continue
 		}
 		var event entities.Event
-		if err := json.Unmarshal(msg.Value, &event); err != nil {
+		if err := json.Unmarshal(KafkaMsg.Value, &event); err != nil {
 			log.Printf("error to unmarshal message Event consumer")
 			continue
 		}
-		if event.Type == "message" {
-			var message entities.Message
-			if err := json.Unmarshal(event.Data, &message); err != nil {
-				log.Panicf("error to unmarshal message :%v", err)
-				continue
-			}
-			if err := c.handler.DeviliryMessage(c.ctx, &message); err != nil {
-				log.Printf("failed to deliver notification: %v", err)
-			}
+		if event.Type != "message" {
+			log.Printf("unknown event type: %s", event.Type)
+			continue
+		}
+		var message entities.Message
+		if err := json.Unmarshal(event.Data, &message); err != nil {
+			log.Printf("error to unmarshal message :%v", err)
+			continue
+		}
+		err = retry.Do(c.ctx, retry.Config{
+			MaxRetries:   5,
+			InitialDelay: time.Second,
+			MaxDelay:     time.Second,
+		}, func() error {
+			return c.handler.DeviliryMessage(c.ctx, &message)
+		})
+		if err != nil {
+			log.Printf("failed to deliver message after retries: %v", err)
+			continue
+		}
+		if err := c.reader.CommitMessages(c.ctx, KafkaMsg); err != nil {
+			log.Printf("failed to commit message: %v", err)
 		}
 	}
 }
