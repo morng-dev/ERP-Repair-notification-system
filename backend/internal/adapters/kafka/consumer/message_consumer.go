@@ -25,7 +25,7 @@ func NewMessageConsumer(kafkaAddr []string, nodeID string, handler kafkahandler.
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:  kafkaAddr,
 		GroupID:  "message-group-" + nodeID,
-		Topic:    "notification-topic",
+		Topic:    "message-topic",
 		MaxBytes: 10e6,
 	})
 	mc := &MessageConsumer{
