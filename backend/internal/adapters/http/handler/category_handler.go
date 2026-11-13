@@ -34,6 +34,7 @@ func (h *CategoryHandler) CreateCategory(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(entities.ErrorResponse{
 			Success: false,
 			Message: "can not create category",
+			Error:   err.Error(),
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{

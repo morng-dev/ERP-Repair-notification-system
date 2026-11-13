@@ -20,6 +20,7 @@ func NewCategoryRepository(db *gorm.DB) repositories.CategoryRepository {
 func (r *CategoryRepository) Create(ctx context.Context, category *entities.Category) error {
 	categoryModel := &models.Category{
 		ID:          category.ID,
+		Name:        category.Name,
 		Description: category.Description,
 		Image:       category.Image,
 	}
@@ -28,9 +29,8 @@ func (r *CategoryRepository) Create(ctx context.Context, category *entities.Cate
 
 func (r *CategoryRepository) GetNameExist(ctx context.Context, name string) (bool, error) {
 	var exist bool
-	if err := r.db.WithContext(ctx).Raw("SELECT EXISTS(SELECT 1) FROM category WHERE name = ?", name).Scan(&exist).Error; err != nil {
+	if err := r.db.WithContext(ctx).Raw("SELECT EXISTS(SELECT 1) FROM categories WHERE name = ?", name).Scan(&exist).Error; err != nil {
 		return false, err
 	}
 	return exist, nil
-
 }

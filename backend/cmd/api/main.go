@@ -128,6 +128,7 @@ func main() {
 		assetHandler,
 		roleHandler,
 		repairHandler,
+		categoryHandler,
 	)
 	routes.SetUpRoute(app)
 

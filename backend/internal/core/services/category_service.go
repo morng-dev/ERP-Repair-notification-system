@@ -18,7 +18,7 @@ func NewCategoryService(categoryRepo repositories.CategoryRepository) services.C
 	return &CategoryService{categoryRepo: categoryRepo}
 }
 
-func (s *CategoryService) CreateCategory(ctx context.Context, req *entities.CategoryCreate) error {
+func (s *CategoryService) CreateCategory(ctx context.Context, req *entities.CreateCategory) error {
 	id, err := uuid.NewV7()
 	if err != nil {
 		return err
@@ -27,8 +27,8 @@ func (s *CategoryService) CreateCategory(ctx context.Context, req *entities.Cate
 	if err != nil {
 		return err
 	}
-	if !exists {
-		return errors.New("Role already exists")
+	if exists {
+		return errors.New("category already exists")
 	}
 	category := &entities.Category{
 		ID:          id,
