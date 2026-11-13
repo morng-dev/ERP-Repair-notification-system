@@ -15,7 +15,7 @@ type Category struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-type CategoryCreate struct {
+type CreateCategory struct {
 	Name        string `json:"name"`
 	Description string `json:"Description"`
 	Image       string `json:"image"`

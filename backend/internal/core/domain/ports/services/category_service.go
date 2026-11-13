@@ -7,5 +7,5 @@ import (
 )
 
 type CategoryService interface {
-	CreateCategory(ctx context.Context, req *entities.CategoryCreate) error
+	CreateCategory(ctx context.Context, req *entities.CreateCategory) error
 }

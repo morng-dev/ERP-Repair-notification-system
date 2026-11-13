@@ -43,7 +43,7 @@ func (s *RepairService) CreateRepair(ctx context.Context, req *entities.RepairRe
 		return err
 	}
 
-	s.notify(ctx, repair.ReportedBy, repair.ID, "repair", "รับเรื่องแจ้งซ่อมแล้ว", "ระบบบันทึกคำขอแจ้งซ่อมของคุณเรียบร้อย รอเจ้าหน้าที่ดำเนินการ")
+	s.notify(ctx, repair.ReportedBy, repair.ID, "repair_created", "รับเรื่องแจ้งซ่อมแล้ว", "ระบบบันทึกคำขอแจ้งซ่อมของคุณเรียบร้อย รอเจ้าหน้าที่ดำเนินการ")
 
 	return nil
 }

@@ -18,12 +18,12 @@ func NewNotificationHandler(notifiRepo repositories.NotificationsRepository) kaf
 	return &notificationHandler{notifiRepo: notifiRepo}
 }
 
-func (h *notificationHandler) HandleNotification(ctx context.Context, n *entities.Notification) error {
-	if n.ID == uuid.Nil || n.UserID == uuid.Nil {
+func (h *notificationHandler) HandleNotification(ctx context.Context, notif *entities.Notification) error {
+	if notif.ID == uuid.Nil || notif.UserID == uuid.Nil {
 		return fmt.Errorf("invalid notification: missing id or user_id")
 	}
-	if n.Status == "" {
-		n.Status = "unread"
+	if notif.Status == "" {
+		notif.Status = "unread"
 	}
-	return h.notifiRepo.Create(ctx, n)
+	return h.notifiRepo.Create(ctx, notif)
 }

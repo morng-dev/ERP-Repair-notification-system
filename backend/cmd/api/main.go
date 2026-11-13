@@ -45,6 +45,7 @@ func main() {
 	locationsRepo := repositories.NewLocationsRepository(db)
 	notifRepo := repositories.NewNotificationsRepository(db)
 	repairRepo := repositories.NewRepairRepository(db)
+	categoryRepo := repositories.NewCategoryRepository(db)
 	//kafkaRepo
 	notifkafkaService := kafkaservice.NewNotificationHandler(notifRepo)
 	//kafka producer
@@ -69,6 +70,7 @@ func main() {
 	assetService := services.NewAssetsService(assetRepo, locationsRepo)
 	roleService := services.NewRoleService(roleRepo, permissionRepo)
 	repairService := services.NewRepairService(repairRepo, notifiProducer)
+	categoryService := services.NewCategoryService(categoryRepo)
 	//middle ware
 	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis, permissionService)
 	ratelimitMW := middleware.NewRatelimitMW(clientRedis)
@@ -80,6 +82,7 @@ func main() {
 	assetHandler := handler.NewAssetsHandler(assetService)
 	roleHandler := handler.NewRoleHandler(roleService)
 	repairHandler := handler.NewRepairHandler(repairService)
+	categoryHandler := handler.NewCategoryHandler(categoryService)
 
 	app := fiber.New(fiber.Config{
 		ProxyHeader:             fiber.HeaderXForwardedFor,
