@@ -8,15 +8,15 @@ import (
 
 type Category struct {
 	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Description string    `json:"Description"`
+	Name        string    `json:"name" validate:"required"`
+	Description string    `json:"description"`
 	Image       string    `json:"image"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type CreateCategory struct {
-	Name        string `json:"name"`
-	Description string `json:"Description"`
+	Name        string `json:"name" validate:"required"`
+	Description string `json:"description"`
 	Image       string `json:"image"`
 }

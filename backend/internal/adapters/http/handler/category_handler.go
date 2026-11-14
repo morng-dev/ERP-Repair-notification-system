@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/services"
@@ -23,6 +25,8 @@ func (h *CategoryHandler) CreateCategory(c *fiber.Ctx) error {
 			Message: "invalid body request",
 		})
 	}
+	req.Name = strings.TrimSpace(req.Name)
+	req.Description = strings.TrimSpace(req.Description)
 	if err := utils.ValidateStruct(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
 			Success: false,

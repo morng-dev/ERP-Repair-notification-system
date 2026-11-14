@@ -112,10 +112,15 @@ func (r *assetsRepositories) GetByOwner(ctx context.Context, userID uuid.UUID, p
 
 func (r *assetsRepositories) modelToEntity(assetModel *models.Assets) *entities.Asset {
 	asset := &entities.Asset{
+		ID:          assetModel.ID,
 		Name:        assetModel.Name,
+		CategoryID:  assetModel.CategoryID,
+		LocationID:  assetModel.LocationID,
 		Description: assetModel.Description,
 		OwnerID:     assetModel.OwnerID,
 		Image:       assetModel.Image,
+		CreatedAt:   assetModel.CreatedAt,
+		UpdatedAt:   assetModel.UpdatedAt,
 	}
 	if assetModel.CategoryID != uuid.Nil && assetModel.Category != nil {
 		asset.Category = &entities.Category{
