@@ -122,5 +122,4 @@ func (s *AssetService) GetAssetByOwner(ctx context.Context, userID uuid.UUID, pa
 		TotalPages: totalPage,
 	}
 	return assets, pagination, nil
-
 }

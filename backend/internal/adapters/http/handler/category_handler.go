@@ -42,3 +42,29 @@ func (h *CategoryHandler) CreateCategory(c *fiber.Ctx) error {
 		Message: "create category success",
 	})
 }
+
+func (h *CategoryHandler) GetAllCategory(c *fiber.Ctx) error {
+	page := c.QueryInt("page", 1)
+	limit := c.QueryInt("limit", 10)
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 10 || limit > 100 {
+		limit = 10
+	}
+	category, pagination, err := h.categoryService.GetAllCategory(c.Context(), page, limit)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(entities.ErrorResponse{
+			Success: false,
+			Message: "can't read category error",
+			Error:   err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
+		Success:    true,
+		Message:    "success",
+		Data:       category,
+		Pagination: pagination,
+	})
+}

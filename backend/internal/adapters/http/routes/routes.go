@@ -107,6 +107,7 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	repair.Post("/", r.repairHandler.CreateRepair)
 	//category
 	category := api.Group("/category")
+	category.Get("/", r.categoryHandler.GetAllCategory)
 	category.Post("/", r.categoryHandler.CreateCategory)
 
 }
