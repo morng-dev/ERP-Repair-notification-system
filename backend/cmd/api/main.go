@@ -36,6 +36,7 @@ func main() {
 	//redis cache
 	userRedisRepo := redis.NewUserRedisRepo(clientRedis)
 	PermissionRedisRepo := redis.NewPermissioncache(clientRedis)
+	AssetRedisRepo := redis.NewAseetCache(clientRedis)
 	//repo
 	userRepo := repositories.NewUserRepository(db)
 	roleRepo := repositories.NewRoleRepository(db)
@@ -67,7 +68,7 @@ func main() {
 	userService := services.NewUserService(userRepo, userRedisRepo)
 	profesService := services.NewProfessionsService(profesRepo)
 	permissionService := services.NewPermissionsService(permissionRepo, PermissionRedisRepo)
-	assetService := services.NewAssetsService(assetRepo, locationsRepo)
+	assetService := services.NewAssetsService(assetRepo, locationsRepo, AssetRedisRepo)
 	roleService := services.NewRoleService(roleRepo, permissionRepo)
 	repairService := services.NewRepairService(repairRepo, notifiProducer)
 	categoryService := services.NewCategoryService(categoryRepo)

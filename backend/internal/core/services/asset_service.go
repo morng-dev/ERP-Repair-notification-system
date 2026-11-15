@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
+	"github.com/morng-dev/erp/internal/core/domain/ports/cache"
 	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
 	"github.com/morng-dev/erp/internal/core/domain/ports/services"
 	"gorm.io/gorm"
@@ -15,12 +16,14 @@ import (
 type AssetService struct {
 	assetRepo    repositories.AssetsRepositories
 	locationRepo repositories.LocationsRepository
+	assetCache   cache.AssetCacheRepo
 }
 
-func NewAssetsService(assetRepo repositories.AssetsRepositories, locationRepo repositories.LocationsRepository) services.AssetService {
+func NewAssetsService(assetRepo repositories.AssetsRepositories, locationRepo repositories.LocationsRepository, assetCache cache.AssetCacheRepo) services.AssetService {
 	return &AssetService{
 		assetRepo:    assetRepo,
 		locationRepo: locationRepo,
+		assetCache:   assetCache,
 	}
 }
 
@@ -94,6 +97,10 @@ func (s *AssetService) GetAssetByID(ctx context.Context, assetID uuid.UUID) (*en
 
 func (s *AssetService) GetAssetsAll(ctx context.Context, page, limit int) ([]*entities.Asset, *entities.PaginationResponse, error) {
 
+	cached, err := s.assetCache.GetAll(ctx, page, limit)
+	if err == nil && cached != nil {
+		return cached.Asset, cached.Pagination, nil
+	}
 	assets, total, err := s.assetRepo.GetAll(ctx, page, limit)
 	if err != nil {
 		return nil, nil, err

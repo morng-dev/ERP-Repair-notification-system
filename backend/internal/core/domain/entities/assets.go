@@ -55,6 +55,6 @@ type AssetResponse struct {
 }
 
 type AssetListCacheData struct {
-	User       []*User
+	Asset      []*Asset
 	Pagination *PaginationResponse
 }
