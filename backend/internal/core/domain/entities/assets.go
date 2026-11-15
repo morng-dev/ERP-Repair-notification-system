@@ -53,3 +53,8 @@ type AssetResponse struct {
 	Location  *Location `json:"location,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type AssetListCacheData struct {
+	User       []*User
+	Pagination *PaginationResponse
+}

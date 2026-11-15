@@ -63,6 +63,5 @@ func (s *RoleService) GetAllRole(ctx context.Context, page, limit int) ([]*entit
 }
 
 func (s *RoleService) UpdatePermission(ctc context.Context, roleID, permissionID uuid.UUID) error {
-
 	return s.roleRepo.UpdatePermissions(ctc, roleID, permissionID)
 }

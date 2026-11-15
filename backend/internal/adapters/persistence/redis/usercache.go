@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/morng-dev/erp/internal/core/domain/entities"
@@ -45,6 +46,7 @@ func (r *UserRedisRepo) SetAll(ctx context.Context, page, limit int, data *entit
 	key := userListKey(page, limit)
 	value, err := json.Marshal(data)
 	if err != nil {
+		log.Printf("Redis SET User ERROR: %v", err)
 		return err
 	}
 
