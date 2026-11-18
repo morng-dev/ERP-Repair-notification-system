@@ -56,6 +56,10 @@ func (r *RepairRepository) GetByID(ctx context.Context, repairID uuid.UUID) (*en
 	return r.modelsToEntities(&repair), nil
 }
 
+func (r *RepairRepository) UpdateStatus(ctx context.Context, repairID uuid.UUID, status string) error {
+	return r.db.WithContext(ctx).Where("id = ?", repairID).Update("Status = ?", status).Error
+}
+
 // func (r *RepairRepository) GetByAssetID(ctx context.Context, assetID uuid.UUID) (*entities.Repair, error)
 
 func (r *RepairRepository) modelsToEntities(repairModel *models.Repair) *entities.Repair {
