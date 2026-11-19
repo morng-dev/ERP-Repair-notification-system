@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/morng-dev/erp/internal/adapters/http/handler"
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
+	"github.com/morng-dev/erp/internal/adapters/http/ws"
 )
 
 type Routes struct {
@@ -19,6 +20,7 @@ type Routes struct {
 	roleHandler        *handler.RoleHandler
 	repairHandler      *handler.RepairHandler
 	categoryHandler    *handler.CategoryHandler
+	wsHandler          *ws.WebSocketHandler
 }
 
 func NewRoutes(
@@ -32,6 +34,7 @@ func NewRoutes(
 	roleHandler *handler.RoleHandler,
 	repairHandler *handler.RepairHandler,
 	categoryHandler *handler.CategoryHandler,
+	wsHandler *ws.WebSocketHandler,
 
 ) *Routes {
 	return &Routes{
@@ -44,6 +47,7 @@ func NewRoutes(
 		roleHandler:        roleHandler,
 		repairHandler:      repairHandler,
 		categoryHandler:    categoryHandler,
+		wsHandler:          wsHandler,
 	}
 }
 

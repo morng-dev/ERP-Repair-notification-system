@@ -15,11 +15,13 @@ import (
 	"github.com/morng-dev/erp/internal/adapters/http/handler"
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
 	"github.com/morng-dev/erp/internal/adapters/http/routes"
+	"github.com/morng-dev/erp/internal/adapters/http/ws"
 	"github.com/morng-dev/erp/internal/adapters/kafka/consumer"
 	"github.com/morng-dev/erp/internal/adapters/kafka/producer"
 	mail "github.com/morng-dev/erp/internal/adapters/mailer"
 	"github.com/morng-dev/erp/internal/adapters/persistence/redis"
 	"github.com/morng-dev/erp/internal/adapters/persistence/repositories"
+	"github.com/morng-dev/erp/internal/adapters/realtime"
 	"github.com/morng-dev/erp/internal/config"
 	"github.com/morng-dev/erp/internal/core/kafkaservice"
 	"github.com/morng-dev/erp/internal/core/services"
@@ -31,6 +33,8 @@ func main() {
 	db := config.Setupdatabase(cfg)
 	//redis cache
 	clientRedis := config.SetupRedis(cfg)
+	//ws
+	notifHub := realtime.NewNotificationHub(cfg.KafkaBrokers, cfg.NodeID)
 	//SmtpMail
 	mailer := mail.NewSmtpMailer(cfg.SMTP_HOST, cfg.SMTP_USERNAME, cfg.SMTP_PASSWORD, cfg.SMTP_FROM, cfg.APPURL, cfg.SMTP_PORT)
 	//redis cache
@@ -84,6 +88,8 @@ func main() {
 	roleHandler := handler.NewRoleHandler(roleService)
 	repairHandler := handler.NewRepairHandler(repairService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
+	//ws handler
+	notiWsHandler := ws.NewWebSocketHandler(notifHub)
 
 	app := fiber.New(fiber.Config{
 		ProxyHeader:             fiber.HeaderXForwardedFor,
@@ -130,6 +136,7 @@ func main() {
 		roleHandler,
 		repairHandler,
 		categoryHandler,
+		notiWsHandler,
 	)
 	routes.SetUpRoute(app)
 
