@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/adapters/persistence/models"
@@ -24,8 +25,8 @@ func (r *RepairRepository) Create(ctx context.Context, req *entities.Repair) err
 		AssetID:    req.AssetID,
 		ReportedBy: req.ReportedBy,
 		AssignedTo: req.AssignedTo,
-		Status:     req.Status,
-		Priority:   req.Priority,
+		Status:     string(req.Status),
+		Priority:   string(req.Priority),
 	}
 	if err := r.db.WithContext(ctx).Create(repairModel).Error; err != nil {
 		return err
@@ -56,8 +57,18 @@ func (r *RepairRepository) GetByID(ctx context.Context, repairID uuid.UUID) (*en
 	return r.modelsToEntities(&repair), nil
 }
 
-func (r *RepairRepository) UpdateStatus(ctx context.Context, repairID uuid.UUID, status string) error {
-	return r.db.WithContext(ctx).Where("id = ?", repairID).Update("Status = ?", status).Error
+func (r *RepairRepository) UpdateStatus(ctx context.Context, repairID uuid.UUID, status entities.RepairStatus) error {
+	result := r.db.WithContext(ctx).Model(&models.Repair{}).Where("id = ?", repairID).Update("status", string(status))
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return errors.New("repair not found")
+	}
+
+	return nil
+
 }
 
 // func (r *RepairRepository) GetByAssetID(ctx context.Context, assetID uuid.UUID) (*entities.Repair, error)
@@ -68,8 +79,8 @@ func (r *RepairRepository) modelsToEntities(repairModel *models.Repair) *entitie
 		AssetID:    repairModel.AssetID,
 		ReportedBy: repairModel.ReportedBy,
 		AssignedTo: repairModel.AssignedTo,
-		Status:     repairModel.Status,
-		Priority:   repairModel.Priority,
+		Status:     entities.RepairStatus(repairModel.Status),
+		Priority:   entities.RepairPriority(repairModel.Priority),
 		CreatedAt:  repairModel.CreatedAt,
 		UpdatedAt:  repairModel.UpdatedAt,
 	}

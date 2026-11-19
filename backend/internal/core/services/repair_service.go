@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 
@@ -36,15 +37,37 @@ func (s *RepairService) CreateRepair(ctx context.Context, req *entities.RepairRe
 		AssetID:    req.AssetID,
 		ReportedBy: req.ReportedBy,
 		AssignedTo: req.AssignedTo,
-		Status:     "pending",
-		Priority:   "normal",
+		Status:     entities.RepairStatusPending,
+		Priority:   entities.RepairPriorityNormal,
 	}
 	if err := s.repairRepo.Create(ctx, repair); err != nil {
 		return err
 	}
+	title, content := getRepairStatusMessage(repair.Status)
+	s.notify(ctx, repair.ReportedBy, repair.ID, "repair_created", title, content)
 
-	s.notify(ctx, repair.ReportedBy, repair.ID, "repair_created", "รับเรื่องแจ้งซ่อมแล้ว", "ระบบบันทึกคำขอแจ้งซ่อมของคุณเรียบร้อย รอเจ้าหน้าที่ดำเนินการ")
+	return nil
+}
 
+func (s *RepairService) UpdateStatusRepair(ctx context.Context, repairID uuid.UUID, status entities.RepairStatus) error {
+	if !status.IsValid() {
+		return errors.New("invalid repair status")
+	}
+	repair, err := s.repairRepo.GetByID(ctx, repairID)
+	if err != nil {
+		return err
+	}
+	if repair.Status == status {
+		return errors.New("repair already has this status")
+	}
+	if !entities.CanTransition(repair.Status, status) {
+		return errors.New("invalid status transition")
+	}
+	if err := s.repairRepo.UpdateStatus(ctx, repairID, status); err != nil {
+		return err
+	}
+	title, content := getRepairStatusMessage(status)
+	s.notify(ctx, repair.ReportedBy, repair.ID, "repair_status_updated", title, content)
 	return nil
 }
 
@@ -67,5 +90,21 @@ func (s *RepairService) notify(ctx context.Context, userID uuid.UUID, repairID u
 	}
 	if err := s.publisher.Publish(ctx, notif); err != nil {
 		log.Printf("publish notification failed (user=%s): %v", userID, err)
+	}
+}
+
+func getRepairStatusMessage(status entities.RepairStatus) (string, string) {
+	switch status {
+	case entities.RepairStatusInProgress:
+		return "กำลังดำเนินการซ่อม", "เจ้าหน้าที่กำลังดำเนินการซ่อมอุปกรณ์ของคุณ"
+
+	case entities.RepairStatusCompleted:
+		return "ซ่อมเสร็จเรียบร้อย", "การดำเนินการซ่อมอุปกรณ์ของคุณเสร็จสิ้นแล้ว"
+
+	case entities.RepairStatusCancelled:
+		return "ยกเลิกการซ่อม", "คำขอแจ้งซ่อมของคุณถูกยกเลิก"
+
+	default:
+		return "อัปเดตสถานะการซ่อม", "สถานะคำขอแจ้งซ่อมของคุณมีการเปลี่ยนแปลง"
 	}
 }
