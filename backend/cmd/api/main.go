@@ -16,6 +16,7 @@ import (
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
 	"github.com/morng-dev/erp/internal/adapters/http/routes"
 	"github.com/morng-dev/erp/internal/adapters/http/ws"
+
 	"github.com/morng-dev/erp/internal/adapters/kafka/consumer"
 	"github.com/morng-dev/erp/internal/adapters/kafka/producer"
 	mail "github.com/morng-dev/erp/internal/adapters/mailer"
@@ -34,7 +35,10 @@ func main() {
 	//redis cache
 	clientRedis := config.SetupRedis(cfg)
 	//ws
-	notifHub := realtime.NewNotificationHub(cfg.KafkaBrokers, cfg.NodeID)
+	notifHub := realtime.NewNotificationHub(cfg.NodeID)
+	//ws handler
+	notiWsHandler := ws.NewWebSocketHandler(notifHub)
+	notificationTestHandler := handler.NewNotificationTestHandler(notifHub)
 	//SmtpMail
 	mailer := mail.NewSmtpMailer(cfg.SMTP_HOST, cfg.SMTP_USERNAME, cfg.SMTP_PASSWORD, cfg.SMTP_FROM, cfg.APPURL, cfg.SMTP_PORT)
 	//redis cache
@@ -88,8 +92,6 @@ func main() {
 	roleHandler := handler.NewRoleHandler(roleService)
 	repairHandler := handler.NewRepairHandler(repairService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
-	//ws handler
-	notiWsHandler := ws.NewWebSocketHandler(notifHub)
 
 	app := fiber.New(fiber.Config{
 		ProxyHeader:             fiber.HeaderXForwardedFor,
@@ -137,6 +139,7 @@ func main() {
 		repairHandler,
 		categoryHandler,
 		notiWsHandler,
+		notificationTestHandler,
 	)
 	routes.SetUpRoute(app)
 

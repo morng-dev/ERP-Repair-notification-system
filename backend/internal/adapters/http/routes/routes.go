@@ -4,23 +4,25 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 	"github.com/morng-dev/erp/internal/adapters/http/handler"
 	"github.com/morng-dev/erp/internal/adapters/http/middleware"
 	"github.com/morng-dev/erp/internal/adapters/http/ws"
 )
 
 type Routes struct {
-	authMW             *middleware.AuthMiddleware
-	ratelimitMW        *middleware.RatelimitMW
-	authHandler        *handler.AuthHandler
-	userHandler        *handler.UserHandler
-	profesHandler      *handler.ProfessionHandler
-	permissionsHandler *handler.PermissionHandler
-	assetHandler       *handler.AssetHandler
-	roleHandler        *handler.RoleHandler
-	repairHandler      *handler.RepairHandler
-	categoryHandler    *handler.CategoryHandler
-	wsHandler          *ws.WebSocketHandler
+	authMW                  *middleware.AuthMiddleware
+	ratelimitMW             *middleware.RatelimitMW
+	authHandler             *handler.AuthHandler
+	userHandler             *handler.UserHandler
+	profesHandler           *handler.ProfessionHandler
+	permissionsHandler      *handler.PermissionHandler
+	assetHandler            *handler.AssetHandler
+	roleHandler             *handler.RoleHandler
+	repairHandler           *handler.RepairHandler
+	categoryHandler         *handler.CategoryHandler
+	wsHandler               *ws.WebSocketHandler
+	notificationTestHandler *handler.NotificationTestHandler
 }
 
 func NewRoutes(
@@ -35,19 +37,21 @@ func NewRoutes(
 	repairHandler *handler.RepairHandler,
 	categoryHandler *handler.CategoryHandler,
 	wsHandler *ws.WebSocketHandler,
+	notificationTestHandler *handler.NotificationTestHandler,
 
 ) *Routes {
 	return &Routes{
-		authHandler:        authHandler,
-		authMW:             authMW,
-		profesHandler:      profesHandler,
-		permissionsHandler: permissionsHandler,
-		assetHandler:       assetHandler,
-		ratelimitMW:        ratelimitMW,
-		roleHandler:        roleHandler,
-		repairHandler:      repairHandler,
-		categoryHandler:    categoryHandler,
-		wsHandler:          wsHandler,
+		authHandler:             authHandler,
+		authMW:                  authMW,
+		profesHandler:           profesHandler,
+		permissionsHandler:      permissionsHandler,
+		assetHandler:            assetHandler,
+		ratelimitMW:             ratelimitMW,
+		roleHandler:             roleHandler,
+		repairHandler:           repairHandler,
+		categoryHandler:         categoryHandler,
+		wsHandler:               wsHandler,
+		notificationTestHandler: notificationTestHandler,
 	}
 }
 
@@ -87,6 +91,13 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	auth.Post("/forget-password", r.ratelimitMW.RatelimitRequest(10, Ratelimitforgetpassword, time.Hour), r.authHandler.ForgotPassword)
 	auth.Post("/reset-password", r.authHandler.ResetPassword)
 	auth.Post("/change-password", r.ratelimitMW.RatelimitRequest(5, Ratelimitchangepassword, 30*time.Minute), r.authMW.AuthRequire(), r.authHandler.Changepassword)
+	//ws
+	api.Get("/ws/notifications", r.authMW.AuthRequire(), websocket.New(r.wsHandler.Handle))
+	api.Post(
+		"/test/notification",
+		r.authMW.AuthRequire(),
+		r.notificationTestHandler.SendTest,
+	)
 	//user
 	user := api.Group("/user")
 	user.Get("/", r.authMW.Rolerequire(RoleAdmin), r.userHandler.GetUser)

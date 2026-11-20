@@ -10,12 +10,12 @@ func WebSocketMiddleware() fiber.Handler {
 		if !websocket.IsWebSocketUpgrade(c) {
 			return fiber.ErrUpgradeRequired
 		}
+
+		// ต้องผ่าน JWT Middleware มาก่อน
 		userID := c.Locals("userID")
 		if userID == nil {
 			return fiber.ErrUnauthorized
 		}
-
-		c.Locals("wsUserID", userID)
 
 		return c.Next()
 	}

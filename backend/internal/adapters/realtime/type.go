@@ -13,3 +13,11 @@ type NotificationClient struct {
 	mu     sync.RWMutex
 	closed bool
 }
+
+type Client struct {
+	UserID string
+	Conn   *websocket.Conn
+	Send   chan interface{}
+	mu     sync.RWMutex
+	closed bool
+}
