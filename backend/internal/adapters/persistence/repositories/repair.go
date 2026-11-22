@@ -36,6 +36,25 @@ func (r *RepairRepository) Create(ctx context.Context, req *entities.Repair) err
 	return nil
 }
 
+func (r *RepairRepository) GetAll(ctx context.Context, page, limit int) ([]*entities.Repair, int, error) {
+	var total int64
+	var repairs []models.Repair
+	offset := (page - 1) * limit
+
+	if err := r.db.WithContext(ctx).Model(&models.Repair{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := r.db.WithContext(ctx).Offset(offset).Limit(limit).Find(&repairs).Error; err != nil {
+		return nil, 0, err
+	}
+	var result []*entities.Repair
+
+	for _, repair := range repairs {
+		result = append(result, r.modelsToEntities(&repair))
+	}
+	return result, int(total), nil
+}
+
 func (r *RepairRepository) GetByID(ctx context.Context, repairID uuid.UUID) (*entities.Repair, error) {
 	var repair models.Repair
 
