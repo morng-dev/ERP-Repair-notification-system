@@ -8,11 +8,10 @@ import (
 )
 
 type ProfessionHandler struct {
-	professService services.ProfressionService
-	// kafkaManager   *kafka.MessageManager
+	professService services.ProfessionService
 }
 
-func NewProfessionsHandler(professService services.ProfressionService) *ProfessionHandler {
+func NewProfessionsHandler(professService services.ProfessionService) *ProfessionHandler {
 	return &ProfessionHandler{professService: professService}
 }
 
@@ -46,5 +45,20 @@ func (h *ProfessionHandler) CreateProfession(c *fiber.Ctx) error {
 		Success: true,
 		Message: "created success fully",
 		Data:    profesions,
+	})
+}
+
+func (h *ProfessionHandler) GetProfessionAll(c *fiber.Ctx) error {
+	profession, err := h.professService.GetProfessionAll(c.Context())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(entities.ErrorResponse{
+			Success: false,
+			Message: "error get professions",
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
+		Success: true,
+		Message: "success",
+		Data:    profession,
 	})
 }

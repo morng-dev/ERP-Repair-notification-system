@@ -78,7 +78,7 @@ func main() {
 	permissionService := services.NewPermissionsService(permissionRepo, PermissionRedisRepo)
 	assetService := services.NewAssetsService(assetRepo, locationsRepo, AssetRedisRepo)
 	roleService := services.NewRoleService(roleRepo, permissionRepo)
-	repairService := services.NewRepairService(repairRepo, notifiProducer)
+	repairService := services.NewRepairService(repairRepo, userRepo, notifiProducer)
 	categoryService := services.NewCategoryService(categoryRepo)
 	//middle ware
 	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis, permissionService)

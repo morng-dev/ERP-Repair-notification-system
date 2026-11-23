@@ -12,5 +12,6 @@ type RepairRepository interface {
 	GetByID(ctx context.Context, repairID uuid.UUID) (*entities.Repair, error)
 	GetAll(ctx context.Context, page, limit int) ([]*entities.Repair, int, error)
 	UpdateStatus(ctx context.Context, repairID uuid.UUID, status entities.RepairStatus) error
+	GetMyRepair(ctx context.Context, userID uuid.UUID) ([]*entities.Repair, error)
 	// GetByAssetID(ctx context.Context, assetID uuid.UUID) (*entities.Repair, error)
 }

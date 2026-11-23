@@ -104,6 +104,7 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	//profession
 	profession := api.Group("/profession", r.authMW.AuthRequire())
 	profession.Post("/", r.authMW.Rolerequire(RoleAdmin), r.authMW.PermissionRequire(PermissionCreateProfession), r.profesHandler.CreateProfession)
+	profession.Get("/", r.profesHandler.GetProfessionAll)
 	//role
 	role := api.Group("/role", r.authMW.AuthRequire(), r.authMW.Rolerequire(RoleAdmin))
 	role.Get("/", r.roleHandler.GetAllRole)

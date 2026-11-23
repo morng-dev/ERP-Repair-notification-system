@@ -11,6 +11,7 @@ type UserRepository interface {
 	Create(ctx context.Context, user *entities.User, password string) error
 	GetByID(ctx context.Context, id uuid.UUID) (*entities.User, error)
 	GetByEmail(ctx context.Context, email string) (*entities.User, error)
+	// GetByProfession(ctx context.Context) ([]*entities.User, error)
 	GetEmailExists(ctx context.Context, email string) (bool, error)
 	GetAll(ctx context.Context, page, limit int) ([]*entities.User, int, error)
 	Update(ctx context.Context, id uuid.UUID, req *entities.UpdateUser) error

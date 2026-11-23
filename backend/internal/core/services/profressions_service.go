@@ -14,7 +14,7 @@ type ProfessionService struct {
 	professRepo repositories.ProfessionRepository
 }
 
-func NewProfessionsService(professRepo repositories.ProfessionRepository) services.ProfressionService {
+func NewProfessionsService(professRepo repositories.ProfessionRepository) services.ProfessionService {
 	return &ProfessionService{professRepo: professRepo}
 }
 
@@ -28,13 +28,21 @@ func (s *ProfessionService) CreateProfession(ctx context.Context, req *entities.
 		return nil, err
 	}
 
-	profressions := &entities.Profession{
+	professions := &entities.Profession{
 		ID:          id,
 		Name:        req.Name,
 		Description: req.Description,
 	}
 
-	profession, err := s.professRepo.Create(ctx, profressions)
+	profession, err := s.professRepo.Create(ctx, professions)
+	if err != nil {
+		return nil, err
+	}
+	return profession, nil
+}
+
+func (s *ProfessionService) GetProfessionAll(ctx context.Context) ([]*entities.Profession, error) {
+	profession, err := s.professRepo.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}

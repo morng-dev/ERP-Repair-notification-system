@@ -63,7 +63,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.U
 }
 func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*entities.User, error) {
 	var user models.User
-	if err := r.db.WithContext(ctx).Preload("Role").First(&user, "email = ?", email).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Profession").Preload("Role").First(&user, "email = ?", email).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, err
 		}

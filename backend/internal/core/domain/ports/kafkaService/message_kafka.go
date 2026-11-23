@@ -7,5 +7,5 @@ import (
 )
 
 type MessageHandler interface {
-	DeliverMessage(ctx context.Context, msg *entities.MessageKafka)
+	DeliverMessage(ctx context.Context, msg *entities.Message)
 }

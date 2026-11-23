@@ -16,12 +16,18 @@ import (
 
 type RepairService struct {
 	repairRepo repositories.RepairRepository
+	userRepo   repositories.UserRepository
 	publisher  kafkaproducer.NotificationKafkaService
 }
 
-func NewRepairService(repairRepo repositories.RepairRepository, publisher kafkaproducer.NotificationKafkaService) services.RepairService {
+func NewRepairService(
+	repairRepo repositories.RepairRepository,
+	userRepo repositories.UserRepository,
+	publisher kafkaproducer.NotificationKafkaService,
+) services.RepairService {
 	return &RepairService{
 		repairRepo: repairRepo,
+		userRepo:   userRepo,
 		publisher:  publisher,
 	}
 }

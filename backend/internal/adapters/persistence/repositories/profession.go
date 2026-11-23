@@ -33,13 +33,25 @@ func (r *ProfessionRepository) Create(ctx context.Context, req *entities.Profess
 func (r *ProfessionRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.Profession, error) {
 	var profess models.Profession
 
-	if err := r.db.WithContext(ctx).Preload("User").First(&profess, "id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Users").First(&profess, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return r.modelsToEntities(&profess), nil
 }
 func (r *ProfessionRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Delete(&models.Profession{}, "id = ?", id).Error
+}
+
+func (r *ProfessionRepository) GetAll(ctx context.Context) ([]*entities.Profession, error) {
+	var profresions []models.Profession
+	if err := r.db.WithContext(ctx).Preload("Users").Find(&profresions).Error; err != nil {
+		return nil, err
+	}
+	var result []*entities.Profession
+	for _, profresion := range profresions {
+		result = append(result, r.modelsToEntities(&profresion))
+	}
+	return result, nil
 }
 
 func (r *ProfessionRepository) AssignToUser(ctx context.Context, userID, profID uuid.UUID) error {

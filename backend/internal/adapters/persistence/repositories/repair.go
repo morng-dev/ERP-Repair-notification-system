@@ -90,6 +90,32 @@ func (r *RepairRepository) UpdateStatus(ctx context.Context, repairID uuid.UUID,
 
 }
 
+func (r *RepairRepository) GetMyRepair(ctx context.Context, userID uuid.UUID) ([]*entities.Repair, error) {
+	var repairs []models.Repair
+	err := r.db.WithContext(ctx).
+		Preload("Asset").
+		Preload("Asset.Location").
+		Preload("Asset.Owner", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id", "email")
+		}).
+		Preload("Asset.Images", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id", "assets_id", "image_url")
+		}).
+		Where("assigned_to = ?", userID).
+		Order("created_at DESC").
+		Find(&repairs).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*entities.Repair
+
+	for _, repair := range repairs {
+		result = append(result, r.modelsToEntities(&repair))
+	}
+	return result, nil
+}
+
 // func (r *RepairRepository) GetByAssetID(ctx context.Context, assetID uuid.UUID) (*entities.Repair, error)
 
 func (r *RepairRepository) modelsToEntities(repairModel *models.Repair) *entities.Repair {
@@ -106,7 +132,6 @@ func (r *RepairRepository) modelsToEntities(repairModel *models.Repair) *entitie
 
 	if repairModel.Asset != nil {
 		assetModel := repairModel.Asset
-
 		asset := &entities.Asset{
 			ID:         assetModel.ID,
 			Name:       assetModel.Name,
@@ -124,7 +149,6 @@ func (r *RepairRepository) modelsToEntities(repairModel *models.Repair) *entitie
 				Name: assetModel.Category.Name,
 			}
 		}
-
 		if assetModel.Location != nil {
 			asset.Location = &entities.Location{
 				ID:      assetModel.Location.ID,
@@ -141,7 +165,6 @@ func (r *RepairRepository) modelsToEntities(repairModel *models.Repair) *entitie
 
 		if assetModel.Images != nil {
 			asset.Images = make([]entities.ImageAssets, 0, len(assetModel.Images))
-
 			for _, imageModel := range assetModel.Images {
 				asset.Images = append(asset.Images, entities.ImageAssets{
 					ID:       imageModel.ID,

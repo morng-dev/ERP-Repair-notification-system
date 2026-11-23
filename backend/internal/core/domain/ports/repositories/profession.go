@@ -9,6 +9,7 @@ import (
 
 type ProfessionRepository interface {
 	Create(ctx context.Context, profession *entities.Profession) (*entities.Profession, error)
+	GetAll(ctx context.Context) ([]*entities.Profession, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*entities.Profession, error)
 	GetByName(ctx context.Context, name string) (*entities.Profession, error)
 	Update(ctx context.Context, id uuid.UUID, req *entities.UpdateProfesion) error
