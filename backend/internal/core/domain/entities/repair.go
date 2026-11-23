@@ -72,6 +72,18 @@ func (s RepairStatus) IsValid() bool {
 	}
 }
 
+func (s RepairPriority) IsValid() bool {
+	switch s {
+	case RepairPriorityLow,
+		RepairPriorityNormal,
+		RepairPriorityHigh,
+		RepairPriorityUrgent:
+		return true
+	default:
+		return false
+	}
+}
+
 func CanTransition(current, next RepairStatus) bool {
 	switch current {
 	case RepairStatusPending:

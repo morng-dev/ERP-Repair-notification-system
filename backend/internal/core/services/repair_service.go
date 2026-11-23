@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -69,6 +70,21 @@ func (s *RepairService) UpdateStatusRepair(ctx context.Context, repairID uuid.UU
 	title, content := getRepairStatusMessage(status)
 	s.notify(ctx, repair.ReportedBy, repair.ID, "repair_status_updated", title, content)
 	return nil
+}
+
+func (s *RepairService) GetAllRepair(ctx context.Context, page, limit int) ([]*entities.Repair, *entities.PaginationResponse, error) {
+	repairs, total, err := s.repairRepo.GetAll(ctx, page, limit)
+	if err != nil {
+		return nil, nil, err
+	}
+	totalPage := int(math.Ceil(float64(total) / float64(limit)))
+	pagination := &entities.PaginationResponse{
+		Page:       page,
+		Limit:      limit,
+		TotalItems: total,
+		TotalPages: totalPage,
+	}
+	return repairs, pagination, nil
 }
 
 func (s *RepairService) notify(ctx context.Context, userID uuid.UUID, repairID uuid.UUID, typ, title, content string) {

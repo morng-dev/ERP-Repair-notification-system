@@ -76,3 +76,27 @@ func (h *RepairHandler) CreateRepair(c *fiber.Ctx) error {
 		Message: "created success",
 	})
 }
+
+func (h *RepairHandler) GetAllRepair(c *fiber.Ctx) error {
+	page := c.QueryInt("page", 1)
+	limit := c.QueryInt("limit", 10)
+	if page < 1 {
+		page = 1
+	}
+	if limit > 100 || limit < 10 {
+		limit = 10
+	}
+	repair, pagination, err := h.RepairService.GetAllRepair(c.Context(), page, limit)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(entities.ErrorResponse{
+			Success: false,
+			Message: "error get repair",
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(entities.ApiResponse{
+		Success:    true,
+		Message:    "success",
+		Data:       repair,
+		Pagination: pagination,
+	})
+}
