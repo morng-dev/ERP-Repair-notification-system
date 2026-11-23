@@ -33,7 +33,7 @@ func (r *ProfessionRepository) Create(ctx context.Context, req *entities.Profess
 func (r *ProfessionRepository) GetByID(ctx context.Context, id uuid.UUID) (*entities.Profession, error) {
 	var profess models.Profession
 
-	if err := r.db.WithContext(ctx).Preload("Users").First(&profess, "id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&profess, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return r.modelsToEntities(&profess), nil
@@ -44,7 +44,7 @@ func (r *ProfessionRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (r *ProfessionRepository) GetAll(ctx context.Context) ([]*entities.Profession, error) {
 	var profresions []models.Profession
-	if err := r.db.WithContext(ctx).Preload("Users").Find(&profresions).Error; err != nil {
+	if err := r.db.WithContext(ctx).Find(&profresions).Error; err != nil {
 		return nil, err
 	}
 	var result []*entities.Profession
@@ -91,15 +91,11 @@ func (r *ProfessionRepository) modelsToEntities(professModel *models.Profession)
 		UpdatedAt:   professModel.UpdatedAt,
 	}
 	for _, profes := range professModel.Users {
-		users := entities.User{
-			ID:        profes.ID,
-			Email:     profes.Email,
-			Firsname:  profes.FirstName,
-			Lastname:  profes.LastName,
-			Avatar:    profes.Avatar,
-			Active:    profes.Active,
-			CreatedAt: profes.CreatedAt,
-			UpdatedAt: profes.UpdatedAt,
+		users := entities.UserResponse{
+			ID:     profes.ID,
+			Email:  profes.Email,
+			Avatar: profes.Avatar,
+			Active: profes.Active,
 		}
 		professions.Users = append(professions.Users, users)
 	}
