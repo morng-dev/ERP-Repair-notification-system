@@ -10,15 +10,15 @@ import (
 	"github.com/morng-dev/erp/internal/core/domain/ports/repositories"
 )
 
-type notificationHandler struct {
+type NotificationConsumerHandler struct {
 	notifiRepo repositories.NotificationsRepository
 }
 
-func NewNotificationHandler(notifiRepo repositories.NotificationsRepository) kafkahandler.NotificationHandler {
-	return &notificationHandler{notifiRepo: notifiRepo}
+func NewNotificationHandler(notifiRepo repositories.NotificationsRepository) kafkahandler.NotificationConsumerHandler {
+	return &NotificationConsumerHandler{notifiRepo: notifiRepo}
 }
 
-func (h *notificationHandler) HandleNotification(ctx context.Context, notif *entities.Notification) error {
+func (h *NotificationConsumerHandler) HandleNotification(ctx context.Context, notif *entities.Notification) error {
 	if notif.ID == uuid.Nil || notif.UserID == uuid.Nil {
 		return fmt.Errorf("invalid notification: missing id or user_id")
 	}

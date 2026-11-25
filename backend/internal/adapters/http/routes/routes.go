@@ -11,18 +11,18 @@ import (
 )
 
 type Routes struct {
-	authMW                  *middleware.AuthMiddleware
-	ratelimitMW             *middleware.RatelimitMW
-	authHandler             *handler.AuthHandler
-	userHandler             *handler.UserHandler
-	profesHandler           *handler.ProfessionHandler
-	permissionsHandler      *handler.PermissionHandler
-	assetHandler            *handler.AssetHandler
-	roleHandler             *handler.RoleHandler
-	repairHandler           *handler.RepairHandler
-	categoryHandler         *handler.CategoryHandler
-	wsHandler               *ws.WebSocketHandler
-	notificationTestHandler *handler.NotificationTestHandler
+	authMW             *middleware.AuthMiddleware
+	ratelimitMW        *middleware.RatelimitMW
+	authHandler        *handler.AuthHandler
+	userHandler        *handler.UserHandler
+	profesHandler      *handler.ProfessionHandler
+	permissionsHandler *handler.PermissionHandler
+	assetHandler       *handler.AssetHandler
+	roleHandler        *handler.RoleHandler
+	repairHandler      *handler.RepairHandler
+	categoryHandler    *handler.CategoryHandler
+	wsHandler          *ws.WebSocketHandler
+	notiWebsocket      *handler.NotificationTestHandler
 }
 
 func NewRoutes(
@@ -37,21 +37,21 @@ func NewRoutes(
 	repairHandler *handler.RepairHandler,
 	categoryHandler *handler.CategoryHandler,
 	wsHandler *ws.WebSocketHandler,
-	notificationTestHandler *handler.NotificationTestHandler,
+	notiWebsocket *handler.NotificationTestHandler,
 
 ) *Routes {
 	return &Routes{
-		authHandler:             authHandler,
-		authMW:                  authMW,
-		profesHandler:           profesHandler,
-		permissionsHandler:      permissionsHandler,
-		assetHandler:            assetHandler,
-		ratelimitMW:             ratelimitMW,
-		roleHandler:             roleHandler,
-		repairHandler:           repairHandler,
-		categoryHandler:         categoryHandler,
-		wsHandler:               wsHandler,
-		notificationTestHandler: notificationTestHandler,
+		authHandler:        authHandler,
+		authMW:             authMW,
+		profesHandler:      profesHandler,
+		permissionsHandler: permissionsHandler,
+		assetHandler:       assetHandler,
+		ratelimitMW:        ratelimitMW,
+		roleHandler:        roleHandler,
+		repairHandler:      repairHandler,
+		categoryHandler:    categoryHandler,
+		wsHandler:          wsHandler,
+		notiWebsocket:      notiWebsocket,
 	}
 }
 
@@ -96,7 +96,7 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	api.Post(
 		"/test/notification",
 		r.authMW.AuthRequire(),
-		r.notificationTestHandler.SendTest,
+		r.notiWebsocket.SendTest,
 	)
 	//user
 	user := api.Group("/user")

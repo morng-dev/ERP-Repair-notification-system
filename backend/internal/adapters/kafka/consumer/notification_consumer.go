@@ -16,17 +16,17 @@ import (
 
 type NotificationConsumer struct {
 	reader  *kafka.Reader
-	handler kafkahandler.NotificationHandler
+	handler kafkahandler.NotificationConsumerHandler
 	ctx     context.Context
 	cancel  context.CancelFunc
 }
 
-func NewNotificationConsumer(kafkaAddr []string, nodeID string, handler kafkahandler.NotificationHandler) *NotificationConsumer {
+func NewNotificationConsumer(kafkaAddr []string, handler kafkahandler.NotificationConsumerHandler) *NotificationConsumer {
 	ctx, cancel := context.WithCancel(context.Background())
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:           kafkaAddr,
 		Topic:             "notification-topic",
-		GroupID:           "notification-group-" + nodeID,
+		GroupID:           "notification-group",
 		MaxBytes:          10e6,
 		HeartbeatInterval: time.Second,
 	})
@@ -52,8 +52,12 @@ func (c *NotificationConsumer) Listen() {
 				return
 			}
 			log.Printf("error to read kafka message :%v", err)
-			time.Sleep(time.Second)
-			continue
+			select {
+			case <-c.ctx.Done():
+				return
+			case <-time.After(time.Second):
+				continue
+			}
 		}
 		var event entities.Event
 		if err := json.Unmarshal(kafkaMsg.Value, &event); err != nil {
@@ -62,7 +66,7 @@ func (c *NotificationConsumer) Listen() {
 		}
 		if event.Type != "notification" {
 			log.Printf("unknown event type: %s", event.Type)
-			return
+			continue
 		}
 		var notification entities.Notification
 		if err := json.Unmarshal(event.Data, &notification); err != nil {
@@ -72,7 +76,7 @@ func (c *NotificationConsumer) Listen() {
 		err = retry.Do(c.ctx, retry.Config{
 			MaxRetries:   10,
 			InitialDelay: 1 * time.Second,
-			MaxDelay:     1 * time.Second,
+			MaxDelay:     30 * time.Second,
 		}, func() error {
 			return c.handler.HandleNotification(
 				c.ctx,
@@ -95,7 +99,9 @@ func (c *NotificationConsumer) Close() {
 	log.Println("NotificationConsumer stoping")
 	c.cancel()
 	if c.reader != nil {
-		c.reader.Close()
+		if err := c.reader.Close(); err != nil {
+			log.Printf("failed to close kafka reader: %v", err)
+		}
 	}
 	log.Println("NotificationConsumer stoped")
 }

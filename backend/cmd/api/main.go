@@ -26,6 +26,7 @@ import (
 	"github.com/morng-dev/erp/internal/config"
 	"github.com/morng-dev/erp/internal/core/kafkaservice"
 	"github.com/morng-dev/erp/internal/core/services"
+	wsadapter "github.com/morng-dev/erp/internal/core/ws"
 )
 
 func main() {
@@ -36,9 +37,16 @@ func main() {
 	clientRedis := config.SetupRedis(cfg)
 	//ws
 	notifHub := realtime.NewNotificationHub(cfg.NodeID)
+	notifWSHandler := wsadapter.NewNotificationWSHandler(notifHub)
 	//ws handler
 	notiWsHandler := ws.NewWebSocketHandler(notifHub)
 	notificationTestHandler := handler.NewNotificationTestHandler(notifHub)
+	notifWSConsumer := consumer.NewNotificationWsConsumer(
+		cfg.KafkaBrokers,
+		cfg.NodeID,
+		notifWSHandler,
+	)
+	go notifWSConsumer.Listen()
 	//SmtpMail
 	mailer := mail.NewSmtpMailer(cfg.SMTP_HOST, cfg.SMTP_USERNAME, cfg.SMTP_PASSWORD, cfg.SMTP_FROM, cfg.APPURL, cfg.SMTP_PORT)
 	//redis cache
@@ -60,18 +68,9 @@ func main() {
 	//kafka producer
 	notifiProducer := producer.NewNotificationProducer(cfg.KafkaBrokers...)
 	//kafka consumer
-	notifiConsumer := consumer.NewNotificationConsumer(cfg.KafkaBrokers, cfg.NodeID, notifkafkaService)
+	notifiConsumer := consumer.NewNotificationConsumer(cfg.KafkaBrokers, notifkafkaService)
 	go notifiConsumer.Listen()
-	//queue
-	// nm, err := kafka.NewNotificationManager(
-	// 	cfg.KafkaBrokers,
-	// 	cfg.NodeID,
-	// 	notifkafkaService,
-	// )
-	// if err != nil {
-	// 	log.Fatalf("failed to initialize notification manager: %v", err)
-	// }
-	//serivce
+
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
 	userService := services.NewUserService(userRepo, userRedisRepo)
 	profesService := services.NewProfessionsService(profesRepo)
@@ -145,12 +144,16 @@ func main() {
 
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(sigchan)
 	go func() {
 		<-sigchan
 		notifiConsumer.Close()
+		notifWSConsumer.Close()
 		log.Println("shutting down graacfully...")
-		// nm.Close()
-		app.ShutdownWithTimeout(15 * time.Second)
+
+		if err := app.ShutdownWithTimeout(15 * time.Second); err != nil {
+			log.Printf("failed to shutdown server: %v", err)
+		}
 	}()
 	log.Printf("Server starting on port %s", cfg.APPPORT)
 	log.Fatal(app.Listen(":" + cfg.APPPORT))
