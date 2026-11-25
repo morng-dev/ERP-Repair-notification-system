@@ -26,7 +26,7 @@ import (
 	"github.com/morng-dev/erp/internal/config"
 	"github.com/morng-dev/erp/internal/core/kafkaservice"
 	"github.com/morng-dev/erp/internal/core/services"
-	wsadapter "github.com/morng-dev/erp/internal/core/ws"
+	wsservice "github.com/morng-dev/erp/internal/core/wsService"
 )
 
 func main() {
@@ -37,9 +37,9 @@ func main() {
 	clientRedis := config.SetupRedis(cfg)
 	//ws
 	notifHub := realtime.NewNotificationHub(cfg.NodeID)
-	notifWSHandler := wsadapter.NewNotificationWSHandler(notifHub)
+	notifWSHandler := wsservice.NewNotificationWSHandler(notifHub)
 	//ws handler
-	notiWsHandler := ws.NewWebSocketHandler(notifHub)
+	notiWebsocket := ws.NewWebSocketHandler(notifHub)
 	notificationTestHandler := handler.NewNotificationTestHandler(notifHub)
 	notifWSConsumer := consumer.NewNotificationWsConsumer(
 		cfg.KafkaBrokers,
@@ -137,7 +137,7 @@ func main() {
 		roleHandler,
 		repairHandler,
 		categoryHandler,
-		notiWsHandler,
+		notiWebsocket,
 		notificationTestHandler,
 	)
 	routes.SetUpRoute(app)

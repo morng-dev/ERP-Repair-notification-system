@@ -1,4 +1,4 @@
-package wsadapter
+package wsservice
 
 import (
 	"context"
