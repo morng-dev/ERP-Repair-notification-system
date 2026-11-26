@@ -3,6 +3,7 @@ package middleware
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
+	"github.com/google/uuid"
 )
 
 func WebSocketMiddleware() fiber.Handler {
@@ -11,9 +12,8 @@ func WebSocketMiddleware() fiber.Handler {
 			return fiber.ErrUpgradeRequired
 		}
 
-		// ต้องผ่าน JWT Middleware มาก่อน
-		userID := c.Locals("userID")
-		if userID == nil {
+		userID, ok := c.Locals("userID").(uuid.UUID)
+		if !ok || userID == uuid.Nil {
 			return fiber.ErrUnauthorized
 		}
 

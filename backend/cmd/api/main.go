@@ -26,7 +26,7 @@ import (
 	"github.com/morng-dev/erp/internal/config"
 	"github.com/morng-dev/erp/internal/core/kafkaservice"
 	"github.com/morng-dev/erp/internal/core/services"
-	wsservice "github.com/morng-dev/erp/internal/core/wsService"
+	"github.com/morng-dev/erp/internal/core/websocketservice"
 )
 
 func main() {
@@ -35,20 +35,20 @@ func main() {
 	db := config.Setupdatabase(cfg)
 	//redis cache
 	clientRedis := config.SetupRedis(cfg)
+	//SmtpMail
+	mailer := mail.NewSmtpMailer(cfg.SMTP_HOST, cfg.SMTP_USERNAME, cfg.SMTP_PASSWORD, cfg.SMTP_FROM, cfg.APPURL, cfg.SMTP_PORT)
 	//ws
 	notifHub := realtime.NewNotificationHub(cfg.NodeID)
-	notifWSHandler := wsservice.NewNotificationWSHandler(notifHub)
+
+	notifWsService := websocketservice.NewNotificationWsService(notifHub)
 	//ws handler
 	notiWebsocket := ws.NewWebSocketHandler(notifHub)
 	notificationTestHandler := handler.NewNotificationTestHandler(notifHub)
 	notifWSConsumer := consumer.NewNotificationWsConsumer(
 		cfg.KafkaBrokers,
 		cfg.NodeID,
-		notifWSHandler,
+		notifWsService,
 	)
-	go notifWSConsumer.Listen()
-	//SmtpMail
-	mailer := mail.NewSmtpMailer(cfg.SMTP_HOST, cfg.SMTP_USERNAME, cfg.SMTP_PASSWORD, cfg.SMTP_FROM, cfg.APPURL, cfg.SMTP_PORT)
 	//redis cache
 	userRedisRepo := redis.NewUserRedisRepo(clientRedis)
 	PermissionRedisRepo := redis.NewPermissioncache(clientRedis)
@@ -69,7 +69,6 @@ func main() {
 	notifiProducer := producer.NewNotificationProducer(cfg.KafkaBrokers...)
 	//kafka consumer
 	notifiConsumer := consumer.NewNotificationConsumer(cfg.KafkaBrokers, notifkafkaService)
-	go notifiConsumer.Listen()
 
 	authrService := services.NewAuthService(userRepo, roleRepo, userRedisRepo, mailer)
 	userService := services.NewUserService(userRepo, userRedisRepo)
@@ -91,7 +90,8 @@ func main() {
 	roleHandler := handler.NewRoleHandler(roleService)
 	repairHandler := handler.NewRepairHandler(repairService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
-
+	go notifiConsumer.Listen()
+	go notifWSConsumer.Listen()
 	app := fiber.New(fiber.Config{
 		ProxyHeader:             fiber.HeaderXForwardedFor,
 		EnableTrustedProxyCheck: true,

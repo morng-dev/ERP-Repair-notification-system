@@ -7,7 +7,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/morng-dev/erp/internal/adapters/kafka/retry"
 	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/internal/core/domain/ports/ws"
 
@@ -16,12 +15,12 @@ import (
 
 type NotificationWsConsumer struct {
 	reader  *kafka.Reader
-	handler ws.NotificationWsHandler
+	handler ws.NotificationWsService
 	ctx     context.Context
 	cancel  context.CancelFunc
 }
 
-func NewNotificationWsConsumer(kafkaAddr []string, nodeID string, handler ws.NotificationWsHandler) *NotificationWsConsumer {
+func NewNotificationWsConsumer(kafkaAddr []string, nodeID string, handler ws.NotificationWsService) *NotificationWsConsumer {
 	ctx, cancel := context.WithCancel(context.Background())
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:           kafkaAddr,
@@ -75,20 +74,10 @@ func (c *NotificationWsConsumer) Listen() {
 			log.Printf("Error unmarshalling notification")
 			continue
 		}
-		err = retry.Do(c.ctx, retry.Config{
-			MaxRetries:   10,
-			InitialDelay: 1 * time.Second,
-			MaxDelay:     1 * time.Second,
-		}, func() error {
-			return c.handler.Deliver(
-				c.ctx,
-				&notification,
-			)
 
-		})
+		err = c.handler.Deliver(c.ctx, &notification)
 		if err != nil {
-			log.Printf("failed to deliver notification after retries: %v", err)
-			return
+			log.Printf("failed to deliver notification: %v", err)
 		}
 		if err := c.reader.CommitMessages(c.ctx, kafkaMsg); err != nil {
 			log.Printf("failed to commit kafka message: %v", err)

@@ -1,4 +1,4 @@
-package wsservice
+package websocketservice
 
 import (
 	"context"
@@ -9,15 +9,15 @@ import (
 	"github.com/morng-dev/erp/internal/core/domain/ports/ws"
 )
 
-type NotificationWSHandler struct {
+type NotificationWsService struct {
 	notifiHub *realtime.NotificationHub
 }
 
-func NewNotificationWSHandler(notifiHub *realtime.NotificationHub) ws.NotificationWsHandler {
-	return &NotificationWSHandler{notifiHub: notifiHub}
+func NewNotificationWsService(notifiHub *realtime.NotificationHub) ws.NotificationWsService {
+	return &NotificationWsService{notifiHub: notifiHub}
 }
 
-func (ws *NotificationWSHandler) Deliver(ctx context.Context, notification *entities.Notification) error {
+func (ws *NotificationWsService) Deliver(ctx context.Context, notification *entities.Notification) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}

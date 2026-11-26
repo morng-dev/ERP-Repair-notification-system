@@ -92,7 +92,7 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	auth.Post("/reset-password", r.authHandler.ResetPassword)
 	auth.Post("/change-password", r.ratelimitMW.RatelimitRequest(5, Ratelimitchangepassword, 30*time.Minute), r.authMW.AuthRequire(), r.authHandler.Changepassword)
 	//ws
-	api.Get("/ws/notifications", r.authMW.AuthRequire(), websocket.New(r.wsHandler.Handle))
+	api.Get("/ws/notifications", r.authMW.AuthRequire(), middleware.WebSocketMiddleware(), websocket.New(r.wsHandler.Handle))
 	api.Post(
 		"/test/notification",
 		r.authMW.AuthRequire(),
