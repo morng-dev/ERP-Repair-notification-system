@@ -11,12 +11,17 @@ type Category struct {
 	Name        string    `json:"name" validate:"required"`
 	Description string    `json:"description"`
 	Image       string    `json:"image"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+
+	ProfessionID *uuid.UUID  `json:"profession_id"`
+	Profession   *Profession `json:"profession,omitempty"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type CreateCategory struct {
-	Name        string `json:"name" validate:"required"`
-	Description string `json:"description"`
-	Image       string `json:"image"`
+	Name         string     `json:"name" validate:"required"`
+	Description  string     `json:"description"`
+	Image        string     `json:"image"`
+	ProfessionID *uuid.UUID `json:"profession_id"`
 }

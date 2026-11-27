@@ -10,6 +10,7 @@ import (
 type AssetsRepositories interface {
 	Create(ctx context.Context, assets *entities.Asset) error
 	GetByID(ctx context.Context, assetID uuid.UUID) (*entities.Asset, error)
+	GetByIDExist(ctx context.Context, assetID uuid.UUID) (bool, error)
 	GetByOwner(ctx context.Context, userID uuid.UUID, page, limit int) ([]*entities.Asset, int, error)
 	GetByAssetExist(ctx context.Context, name string) (bool, error)
 	GetAll(ctx context.Context, page, limit int) ([]*entities.Asset, int, error)

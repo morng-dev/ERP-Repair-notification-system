@@ -30,10 +30,11 @@ type User struct {
 }
 
 type Profession struct {
-	ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	Name        string    `gorm:"type:varchar(100);uniqueIndex" json:"name" validate:"required"`
-	Description string    `gorm:"type:varchar(100)" json:"description"`
-	Users       []User    `gorm:"foreignKey:ProfessionID" json:"users"`
-	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+	ID          uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
+	Name        string     `gorm:"type:varchar(100);uniqueIndex" json:"name" validate:"required"`
+	Description string     `gorm:"type:varchar(100)" json:"description"`
+	Users       []User     `gorm:"foreignKey:ProfessionID;references:ID" json:"users"`
+	Categories  []Category `gorm:"foreignKey:ProfessionID;references:ID" json:"categories,omitempty"`
+	CreatedAt   time.Time  `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt   time.Time  `gorm:"autoUpdateTime" json:"updated_at"`
 }

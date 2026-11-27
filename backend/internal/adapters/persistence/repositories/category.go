@@ -19,10 +19,11 @@ func NewCategoryRepository(db *gorm.DB) repositories.CategoryRepository {
 
 func (r *CategoryRepository) Create(ctx context.Context, category *entities.Category) error {
 	categoryModel := &models.Category{
-		ID:          category.ID,
-		Name:        category.Name,
-		Description: category.Description,
-		Image:       category.Image,
+		ID:           category.ID,
+		Name:         category.Name,
+		ProfessionID: category.ProfessionID,
+		Description:  category.Description,
+		Image:        category.Image,
 	}
 	return r.db.WithContext(ctx).Create(&categoryModel).Error
 }
@@ -40,11 +41,12 @@ func (r *CategoryRepository) GetAllCategory(ctx context.Context, page, limit int
 	var result []*entities.Category
 	for _, category := range categoryModel {
 		result = append(result, &entities.Category{
-			ID:          category.ID,
-			Name:        category.Name,
-			Description: category.Description,
-			CreatedAt:   category.CreatedAt,
-			UpdatedAt:   category.UpdatedAt,
+			ID:           category.ID,
+			Name:         category.Name,
+			ProfessionID: category.ProfessionID,
+			Description:  category.Description,
+			CreatedAt:    category.CreatedAt,
+			UpdatedAt:    category.UpdatedAt,
 		})
 	}
 	return result, int(total), nil

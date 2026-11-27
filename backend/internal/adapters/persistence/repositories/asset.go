@@ -71,6 +71,14 @@ func (r *assetsRepositories) GetByAssetExist(ctx context.Context, name string) (
 	return exists, nil
 }
 
+func (r *assetsRepositories) GetByIDExist(ctx context.Context, assetID uuid.UUID) (bool, error) {
+	var exists bool
+	if err := r.db.WithContext(ctx).Raw(`SELECT EXISTS(SELECT 1) FROM assets WHERE id = ?`, assetID).Scan(&exists).Error; err != nil {
+		return false, err
+	}
+	return exists, nil
+}
+
 func (r *assetsRepositories) GetAll(ctx context.Context, page, limit int) ([]*entities.Asset, int, error) {
 	var assets []models.Assets
 	var total int64

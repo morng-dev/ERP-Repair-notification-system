@@ -40,8 +40,9 @@ func runAutoMigrate(db *gorm.DB) {
 
 	err := db.AutoMigrate(
 		&models.User{},
-		&models.Profession{},
 		&models.Role{},
+		&models.Profession{},
+		&models.Category{},
 		&models.Repair{},
 		&models.RepairLogs{},
 		&models.Permission{},
@@ -51,7 +52,6 @@ func runAutoMigrate(db *gorm.DB) {
 		&models.ImageAssets{},
 		&models.Chanal{},
 		&models.Assets{},
-		&models.Category{},
 	)
 	if err != nil {
 		log.Fatal("failed to migration...")

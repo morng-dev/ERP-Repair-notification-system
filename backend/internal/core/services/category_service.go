@@ -13,10 +13,11 @@ import (
 
 type CategoryService struct {
 	categoryRepo repositories.CategoryRepository
+	professRepo  repositories.ProfessionRepository
 }
 
-func NewCategoryService(categoryRepo repositories.CategoryRepository) services.CategoryService {
-	return &CategoryService{categoryRepo: categoryRepo}
+func NewCategoryService(categoryRepo repositories.CategoryRepository, professRepo repositories.ProfessionRepository) services.CategoryService {
+	return &CategoryService{categoryRepo: categoryRepo, professRepo: professRepo}
 }
 
 func (s *CategoryService) CreateCategory(ctx context.Context, req *entities.CreateCategory) error {
@@ -31,11 +32,19 @@ func (s *CategoryService) CreateCategory(ctx context.Context, req *entities.Crea
 	if exists {
 		return errors.New("category already exists")
 	}
+	exists, err = s.professRepo.GetByExists(ctx, *req.ProfessionID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return errors.New("profess notfund")
+	}
 	category := &entities.Category{
-		ID:          id,
-		Name:        req.Name,
-		Description: req.Description,
-		Image:       req.Image,
+		ID:           id,
+		Name:         req.Name,
+		Description:  req.Description,
+		ProfessionID: req.ProfessionID,
+		Image:        req.Image,
 	}
 	if err := s.categoryRepo.Create(ctx, category); err != nil {
 		return errors.New("can not create category")

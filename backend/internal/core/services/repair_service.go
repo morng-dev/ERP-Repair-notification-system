@@ -17,17 +17,20 @@ import (
 type RepairService struct {
 	repairRepo repositories.RepairRepository
 	userRepo   repositories.UserRepository
+	assetRepo  repositories.AssetsRepositories
 	publisher  kafkaproducer.NotificationKafkaService
 }
 
 func NewRepairService(
 	repairRepo repositories.RepairRepository,
 	userRepo repositories.UserRepository,
+	assetRepo repositories.AssetsRepositories,
 	publisher kafkaproducer.NotificationKafkaService,
 ) services.RepairService {
 	return &RepairService{
 		repairRepo: repairRepo,
 		userRepo:   userRepo,
+		assetRepo:  assetRepo,
 		publisher:  publisher,
 	}
 }
@@ -37,7 +40,33 @@ func (s *RepairService) CreateRepair(ctx context.Context, req *entities.RepairRe
 	if err != nil {
 		return err
 	}
+	asset, err := s.assetRepo.GetByID(ctx, req.AssetID)
+	if err != nil {
+		return err
+	}
 
+	if req.AssignedTo != uuid.Nil {
+		technician, err := s.userRepo.GetByID(ctx, req.AssignedTo)
+		if err != nil {
+			return err
+		}
+
+		if !technician.Active {
+			return errors.New("technician is inactive")
+		}
+
+		if asset.Category.ProfessionID == nil {
+			return errors.New("asset category has no profession")
+		}
+
+		if technician.ProfessionID == nil {
+			return errors.New("technician has no profession")
+		}
+
+		if *technician.ProfessionID != *asset.Category.ProfessionID {
+			return errors.New("technician profession does not match asset category")
+		}
+	}
 	repair := &entities.Repair{
 		ID:         id,
 		Title:      req.Title,

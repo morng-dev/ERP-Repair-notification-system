@@ -22,7 +22,6 @@ type Routes struct {
 	repairHandler      *handler.RepairHandler
 	categoryHandler    *handler.CategoryHandler
 	wsHandler          *ws.WebSocketHandler
-	notiWebsocket      *handler.NotificationTestHandler
 }
 
 func NewRoutes(
@@ -37,7 +36,6 @@ func NewRoutes(
 	repairHandler *handler.RepairHandler,
 	categoryHandler *handler.CategoryHandler,
 	wsHandler *ws.WebSocketHandler,
-	notiWebsocket *handler.NotificationTestHandler,
 
 ) *Routes {
 	return &Routes{
@@ -51,7 +49,6 @@ func NewRoutes(
 		repairHandler:      repairHandler,
 		categoryHandler:    categoryHandler,
 		wsHandler:          wsHandler,
-		notiWebsocket:      notiWebsocket,
 	}
 }
 
@@ -93,11 +90,6 @@ func (r *Routes) SetUpRoute(app *fiber.App) {
 	auth.Post("/change-password", r.ratelimitMW.RatelimitRequest(5, Ratelimitchangepassword, 30*time.Minute), r.authMW.AuthRequire(), r.authHandler.Changepassword)
 	//ws
 	api.Get("/ws/notifications", r.authMW.AuthRequire(), middleware.WebSocketMiddleware(), websocket.New(r.wsHandler.Handle))
-	api.Post(
-		"/test/notification",
-		r.authMW.AuthRequire(),
-		r.notiWebsocket.SendTest,
-	)
 	//user
 	user := api.Group("/user")
 	user.Get("/", r.authMW.Rolerequire(RoleAdmin), r.userHandler.GetUser)

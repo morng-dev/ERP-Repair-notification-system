@@ -43,7 +43,6 @@ func main() {
 	notifWsService := websocketservice.NewNotificationWsService(notifHub)
 	//ws handler
 	notiWebsocket := ws.NewWebSocketHandler(notifHub)
-	notificationTestHandler := handler.NewNotificationTestHandler(notifHub)
 	notifWSConsumer := consumer.NewNotificationWsConsumer(
 		cfg.KafkaBrokers,
 		cfg.NodeID,
@@ -77,7 +76,7 @@ func main() {
 	assetService := services.NewAssetsService(assetRepo, locationsRepo, AssetRedisRepo)
 	roleService := services.NewRoleService(roleRepo, permissionRepo)
 	repairService := services.NewRepairService(repairRepo, userRepo, notifiProducer)
-	categoryService := services.NewCategoryService(categoryRepo)
+	categoryService := services.NewCategoryService(categoryRepo, profesRepo)
 	//middle ware
 	authMW := middleware.NewAuthMiddleware(cfg.JWTSecret, clientRedis, permissionService)
 	ratelimitMW := middleware.NewRatelimitMW(clientRedis)
@@ -138,7 +137,6 @@ func main() {
 		repairHandler,
 		categoryHandler,
 		notiWebsocket,
-		notificationTestHandler,
 	)
 	routes.SetUpRoute(app)
 

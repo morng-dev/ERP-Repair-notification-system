@@ -2,20 +2,20 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/google/uuid"
 	"github.com/morng-dev/erp/internal/adapters/persistence/models"
-	"github.com/morng-dev/erp/internal/core/domain/entities"
 	"github.com/morng-dev/erp/pkg/utils"
 	"gorm.io/gorm"
 )
 
 func SeedDatabase(db *gorm.DB, config *Config) error {
 	log.Println("start database seeding...")
-	seedCategory(db)
 	seedPermission(db)
 	seedProfessions(db)
+	seedCategory(db)
 	seedRoles(db)
 	seedAdmin(db, config)
 	seedRolePermissions(db)
@@ -139,8 +139,24 @@ func seedProfessions(db *gorm.DB) error {
 
 	professions := []models.Profession{
 		{
-			Name:        "IT subport",
+			Name:        "IT Support",
 			Description: "maintains and troubleshoots an organization's computer systems, networks",
+		},
+		{
+			Name:        "Electrical Technician",
+			Description: "Maintains and repairs electrical systems",
+		},
+		{
+			Name:        "Facility Technician",
+			Description: "Maintains building and utility systems",
+		},
+		{
+			Name:        "Furniture Technician",
+			Description: "Maintains and repairs office furniture",
+		},
+		{
+			Name:        "Office Equipment Technician",
+			Description: "Maintains and repairs office equipment",
 		},
 	}
 
@@ -168,54 +184,122 @@ func seedProfessions(db *gorm.DB) error {
 	return nil
 }
 
+func getProfessionID(db *gorm.DB, name string) (uuid.UUID, error) {
+	var profession models.Profession
+
+	err := db.Select("id").
+		Where("name = ?", name).
+		First(&profession).Error
+
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return profession.ID, nil
+}
+
 func seedCategory(db *gorm.DB) error {
-	category := []entities.Category{
+	type categorySeed struct {
+		Name        string
+		Description string
+		Profession  string
+	}
+
+	categories := []categorySeed{
 		{
 			Name:        "เครื่องใช้ไฟฟ้า",
 			Description: "เครื่องใช้ไฟฟ้าภายในสำนักงาน",
+			Profession:  "Electrical Technician",
 		},
 		{
 			Name:        "เฟอร์นิเจอร์สำนักงาน",
 			Description: "โต๊ะ เก้าอี้ และเฟอร์นิเจอร์",
+			Profession:  "Furniture Technician",
 		},
 		{
 			Name:        "คอมพิวเตอร์และอุปกรณ์ IT",
 			Description: "อุปกรณ์คอมพิวเตอร์และระบบเครือข่าย",
+			Profession:  "IT Support",
 		},
 		{
 			Name:        "อุปกรณ์สำนักงาน",
 			Description: "เครื่องมือและอุปกรณ์สำหรับงานเอกสาร",
+			Profession:  "Office Equipment Technician",
 		},
 		{
 			Name:        "ระบบไฟฟ้าและแสงสว่าง",
 			Description: "อุปกรณ์และระบบไฟฟ้าภายในอาคาร",
+			Profession:  "Electrical Technician",
 		},
 		{
 			Name:        "ระบบอาคารและสาธารณูปโภค",
 			Description: "ระบบประปาและส่วนประกอบอาคาร",
+			Profession:  "Facility Technician",
 		},
 	}
 
-	for _, categorys := range category {
-		var existCategory models.Category
-		if err := db.Where("name = ?", categorys.Name).First(&existCategory).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				id, err := uuid.NewV7()
-				if err != nil {
-					return err
-				}
-				categorys.ID = id
-				if err := db.Create(&categorys).Error; err != nil {
-					log.Printf("Error creating role %s: %v", categorys.Name, err)
-					return err
-				}
-				log.Printf("create category success %v", categorys.Name)
-			} else {
-				log.Printf("Error category role %s: %v", categorys.Name, err)
-				return err
-			}
+	for _, item := range categories {
+		// 1. ค้นหา Profession ก่อน
+		professionID, err := getProfessionID(db, item.Profession)
+		if err != nil {
+			return fmt.Errorf(
+				"profession %q not found: %w",
+				item.Profession,
+				err,
+			)
 		}
+
+		// 2. ค้นหา Category ที่มีอยู่แล้ว
+		var existing models.Category
+
+		err = db.Where("name = ?", item.Name).
+			First(&existing).Error
+
+		if err == nil {
+			// 3. ถ้ามีอยู่แล้ว ให้อัปเดตข้อมูล
+			if err := db.Model(&existing).Updates(map[string]interface{}{
+				"description":   item.Description,
+				"profession_id": professionID,
+			}).Error; err != nil {
+				return fmt.Errorf(
+					"update category %q failed: %w",
+					item.Name,
+					err,
+				)
+			}
+
+			log.Printf("Category updated: %s", item.Name)
+			continue
+		}
+
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+
+		// 4. ถ้ายังไม่มี ให้สร้างใหม่
+		id, err := uuid.NewV7()
+		if err != nil {
+			return err
+		}
+
+		category := models.Category{
+			ID:           id,
+			Name:         item.Name,
+			Description:  item.Description,
+			ProfessionID: &professionID,
+		}
+
+		if err := db.Create(&category).Error; err != nil {
+			return fmt.Errorf(
+				"create category %q failed: %w",
+				item.Name,
+				err,
+			)
+		}
+
+		log.Printf("Category created: %s", item.Name)
 	}
+
 	return nil
 }
 

@@ -103,7 +103,7 @@ func (h *AuthHandler) Changepassword(c *fiber.Ctx) error {
 	if err := utils.ValidateStruct(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
 			Success: false,
-			Message: "Invalid request data",
+			Message: "Invalid request struct",
 			Error:   err.Error(),
 		})
 	}
@@ -155,6 +155,39 @@ func (h *AuthHandler) Changepassword(c *fiber.Ctx) error {
 	})
 }
 
+func (h *AuthHandler) RefreshToken(c *fiber.Ctx) error {
+	var req entities.RefreshTokenRequest
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
+			Success: false,
+			Message: "Invalid request body",
+			Error:   err.Error(),
+		})
+	}
+	if err := utils.ValidateStruct(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
+			Success: false,
+			Message: "Invalid request body",
+			Error:   err.Error(),
+		})
+	}
+	response, err := h.authService.RefreshToken(c.UserContext(), &req)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(entities.ErrorResponse{
+			Success: false,
+			Message: "con not refresh token",
+			Error:   err.Error(),
+		})
+
+	}
+	return c.JSON(entities.ApiResponse{
+		Success: true,
+		Message: "success refresh token",
+		Data:    response,
+	})
+}
+
 func (h *AuthHandler) ForgotPassword(c *fiber.Ctx) error {
 	var req entities.ForgotPasswordRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -174,7 +207,7 @@ func (h *AuthHandler) ForgotPassword(c *fiber.Ctx) error {
 	if err := h.authService.ForgotPassword(c.Context(), &req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.ErrorResponse{
 			Success: false,
-			Message: "Invalid request data",
+			Message: "Invalid request struct",
 			Error:   err.Error(),
 		})
 	}

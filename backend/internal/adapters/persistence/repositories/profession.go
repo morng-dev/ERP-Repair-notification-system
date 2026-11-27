@@ -65,6 +65,14 @@ func (r *ProfessionRepository) AssignToUser(ctx context.Context, userID, profID 
 	return nil
 }
 
+func (r *ProfessionRepository) GetByExists(ctx context.Context, professionID uuid.UUID) (bool, error) {
+	var exists bool
+	if err := r.db.WithContext(ctx).Raw(`SELECT EXIST(SELECT 1) FROM professions WHERE id = ?`, professionID).Scan(&exists).Error; err != nil {
+		return false, err
+	}
+	return exists, nil
+}
+
 func (r *ProfessionRepository) GetByName(ctx context.Context, name string) (*entities.Profession, error) {
 	var profes models.Profession
 	if err := r.db.WithContext(ctx).First(&profes, "name = ?", name).Error; err != nil {
